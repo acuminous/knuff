@@ -16,31 +16,34 @@ A `Reminder` needs
 1. An id for duplicate checking and error reporting
 2. A schedule adhering to [rfc5545](https://datatracker.ietf.org/doc/html/rfc5545) RRULE format (more accessibly documented by the node [rrule](https://www.npmjs.com/package/rrule) package)
 3. Issue details (title and body) describing the work that needs to be done
-4. One or more repositories the issue will be published to
+4. One or more repositories the issue will be posted to
 
 Knuff will process a list of reminders, creating issues in the relevant repositories according to the schedule. Knuff will only create the issue if one not already open, and will continue if it encounters an error. 
 
-#### Format
+### The Reminders File
+Knuff works with JSON, but since it's so easy to convert YAML to JSON, and because YAML is better for multiline strings, it is a good choice. An annoated reminders file is below...
+
 ```yaml
 # Creates an issue in acuminous/foo repository at 08:00 on the 1st of July 2025
 
   # Required. Must be unique within the reminders file
 - id: 'update-contentful-api-key'
 
-  # Optional. Not used by Knuff, but maybe useful for reminder archiology 
+  # Optional. Potentially useful for understanding the reminder's background 
   description: |
     The Contentful API key expires yearly. See https://github.com/acuminous/foo/blog/master/README.md#api-key for more details
 
-  # Required. Can be one-off or recurring. See https://datatracker.ietf.org/doc/html/rfc5545 and https://www.npmjs.com/package/rrule
+  # Required. See https://datatracker.ietf.org/doc/html/rfc5545 
+  # See also https://www.npmjs.com/package/rrule
   schedule: |
     DTSTART;TZID=Europe/London:20250701T080000
     RRULE:FREQ=DAILY;COUNT=1
 
   issue:
-    # Required. This will be the title of the ticket / issue
+    # Required. This will be the title of the issue
     title: 'Update Contenful API Key'
 
-    # Required. This will be the body of the ticket / issue
+    # Required. This will be the body of the issue
     body: |
       The Contentful API Key expires on the 14th of July 2025.
       - [ ] Regenerate the Contentful API Key
@@ -48,7 +51,7 @@ Knuff will process a list of reminders, creating issues in the relevant reposito
       - [ ] Redeploy the website
       - [ ] Update the reminder for next year
 
-    # Optional. Knuff will append the reminder id to the list of labels and use it prevent creating duplicates
+    # Optional. Knuff will append the reminder id to the issue labels and use it prevent creating duplicates
     labels:
       - 'Reminder'
       - 'Critical'
@@ -59,7 +62,7 @@ Knuff will process a list of reminders, creating issues in the relevant reposito
 ```
 
 ### Processing Reminders
-To process the reminders you need to write a script that will load (and if necessary parse) the reminder file. You also need to configure the Repository Drivers. The drivers are published separately to this package. At time of writing the following drivers exist.
+To process the reminders you need to write a script that will read the reminder file. You also need to configure the Repository Drivers. The drivers are published separately to this package. At time of writing the following drivers exist.
 
 - [GitHub Driver](https://www.npmjs.com/package/knuff-github-driver)
 - [JIRA Driver](https://www.youtube.com/watch?v=LPCUAgzUt2k)
@@ -67,12 +70,11 @@ To process the reminders you need to write a script that will load (and if neces
 An example script is as follows...
 
 ```js
-/* eslint-disable no-console,import/no-unresolved,import/extensions */
 import fs from 'node:fs';
 import yaml from 'yaml';
 import { Octokit } from '@octokit/rest';
-import GitHubDriver from 'knuff-github-driver';
-import Knuff from 'knuff';
+import GitHubDriver from '@acuminous/knuff-github-driver';
+import Knuff from '@acuminous/knuff';
 
 const pathToReminders = process.argv[2] || 'reminders.yaml';
 
@@ -109,7 +111,7 @@ knuff.process(reminders).then((stats) => {
 ```
 
 ### Scheduling Knuff
-Knuff requires an external scheduler. The choice is up to you, but we provide an example GitHub Actions setup below...
+Knuff requires an external scheduler. Which one is to you, but we provide an example GitHub Actions setup below...
 
 ```yaml
 name: Knuff Said!
@@ -135,4 +137,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
-
+If you only ever create reminders in the same repository as the action, you do not need to use a personal access token, GitHub magically provides one for you. See https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication

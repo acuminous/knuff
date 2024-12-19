@@ -1,0 +1,37 @@
+{
+  "name": "knuff",
+  "version": "1.0.0",
+  "description": "Reminds teams of recurring or future work by creating tasks in your issue tracker of choice",
+  "keywords": [
+    "todo",
+    "reminder",
+    "schedule",
+    "cron",
+    "rrule",
+    "github",
+    "action",
+    "issue"
+  ],
+  "author": "Stephen Cresswell",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "lint-staged": "lint-staged",
+    "test": "zUnit",
+    "coverage": "nyc --report html --reporter lcov --reporter text-summary zUnit",
+    "prepare": "husky install"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
+    "nyc": "^17.1.0",
+    "zunit": "^4.0.2"
+  },
+  "dependencies": {
+    "groundhog-day": "^3.0.0",
+    "rrule": "^2.8.1"
+  }
+}

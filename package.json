@@ -39,5 +39,17 @@
   },
   "lint-staged": {
     "*.js": "eslint --fix"
-  }
+  },
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/acuminous/knuff.git"
+  },
+  "bugs": {
+    "url": "https://github.com/acuminous/knuff/issues"
+  },
+  "homepage": "https://github.com/acuminous/knuff#readme"
 }

@@ -10,6 +10,7 @@ class Knuff extends EventEmitter {
   #drivers;
   #clock;
   #ajvValidate;
+  #stats;
 
   constructor(config, drivers, clock = real) {
     super();
@@ -20,18 +21,18 @@ class Knuff extends EventEmitter {
   }
 
   async process(reminders) {
-    const stats = { reminders: 0, errors: 0 };
+    this.#stats = { reminders: 0, due: 0, duplicates: 0, created: 0, errors: 0 };
     for (let i = 0; i < reminders.length; i++) {
       try {
-        stats.reminders++;
+        this.#stats.reminders++;
         await this.#processReminder(reminders[i]);
       } catch (error) {
-        stats.errors++;
+        this.#stats.errors++;
         this.emit('error', error);
       }
     }
-    if (stats.errors > 0) throw new Error(`${stats.errors} of ${stats.reminders} reminders could not be processed`);
-    return { stats };
+    if (this.#stats.errors > 0) throw new Error(`${this.#stats.errors} of ${this.#stats.reminders} reminders could not be processed`);
+    return this.#stats;
   }
 
   async #processReminder(reminder) {
@@ -71,13 +72,19 @@ class Knuff extends EventEmitter {
   }
 
   async #ensureIssue(reminder) {
+    this.#stats.due++;
     for (let j = 0; j < reminder.repositories.length; j++) {
       const repositoryId = reminder.repositories[j];
       const repository = this.#config.repositories[repositoryId];
       if (!repository) throw new Error(`Reminder '${reminder.id}' has an unknown repository '${repositoryId}'`);
       const driver = this.#drivers[repository.driver];
       const isDuplicate = await driver.findIssue(repository, reminder.id);
-      if (!isDuplicate) await driver.createIssue(repository, reminder.id, reminder.issue);
+      if (isDuplicate) {
+        this.#stats.duplicates++;
+      } else {
+        await driver.createIssue(repository, reminder.id, reminder.issue);
+        this.#stats.created++;
+      }
     }
   }
 }

@@ -366,21 +366,10 @@ describe('knuff', () => {
       const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-            labels: [
-              'chore',
-              'reminder',
-            ],
-          },
-          repositories: [
-            'acuminous/foo',
-          ],
-        },
+        opi.wrap(bumpDependencies)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .set('issue.labels', ['chore', 'reminder'])
+          .value(),
       ];
       await knuff.process(reminders);
 
@@ -398,18 +387,10 @@ describe('knuff', () => {
       const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/foo',
-            'acuminous/bar',
-          ],
-        },
+        opi.wrap(bumpDependencies)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .set('repositories', ['acuminous/foo', 'acuminous/bar'])
+          .value(),
       ];
       await knuff.process(reminders);
 
@@ -428,18 +409,10 @@ describe('knuff', () => {
       const knuff = new Knuff({ repositories }, drivers, clock);
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/foo',
-            'acuminous/baz',
-          ],
-        },
+        opi.wrap(bumpDependencies)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .set('repositories', ['acuminous/foo', 'acuminous/baz'])
+          .value(),
       ];
       await knuff.process(reminders);
 
@@ -456,28 +429,8 @@ describe('knuff', () => {
       const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/foo',
-          ],
-        },
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/foo',
-          ],
-        },
+        opi.set(bumpDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
+        opi.set(bumpDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
       ];
       await knuff.process(reminders);
 
@@ -496,17 +449,10 @@ describe('knuff', () => {
       const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/meh',
-          ],
-        },
+        opi.wrap(bumpDependencies)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .set('repositories', ['acuminous/meh'])
+          .value(),
       ];
 
       const errors = [];
@@ -526,17 +472,7 @@ describe('knuff', () => {
       const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: 'DTSTART:20241201T08x000Z;\nRRULE:FREQ=DAILY;COUNT=1',
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/foo',
-          ],
-        },
+        opi.set(bumpDependencies, 'schedule', 'DTSTART:20241201T08x000Z;\nRRULE:FREQ=DAILY;COUNT=1'),
       ];
 
       const errors = [];
@@ -558,28 +494,13 @@ describe('knuff', () => {
       const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/meh',
-          ],
-        },
-        {
-          id: 'audit-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Audit Dependencies',
-            body: 'Run npm audit --fix',
-          },
-          repositories: [
-            'acuminous/foo',
-          ],
-        },
+        opi.wrap(bumpDependencies)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .set('repositories', ['acuminous/meh'])
+          .value(),
+        opi.wrap(auditDependencies)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .value(),
       ];
 
       const errors = [];
@@ -597,6 +518,34 @@ describe('knuff', () => {
       eq(issues.length, 1);
       eq(issues[0].title, 'Audit Dependencies');
       eq(issues[0].body, 'Run npm audit --fix');
+    });
+  });
+
+  describe('stats', () => {
+    it('should report stats', async () => {
+      const today = new Date(clock.now());
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({ github: driver });
+
+      const reminders = [
+        opi.wrap(bumpDependencies)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .value(),
+        opi.wrap(bumpDependencies)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .value(),
+        opi.wrap(auditDependencies)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(tomorrow)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .value(),
+      ];
+
+      const stats = await knuff.process(reminders);
+      eq(stats.reminders, 3);
+      eq(stats.due, 2);
+      eq(stats.duplicates, 1);
+      eq(stats.created, 1);
+      eq(stats.errors, 0);
     });
   });
 

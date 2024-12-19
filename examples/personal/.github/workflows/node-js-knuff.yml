@@ -19,4 +19,8 @@ jobs:
       - name: Execute Knuff
         run: node index.js reminders.yaml
         env:
+          # If you only ever post reminders to the same repository
+          # that runs the action, you can use the GITHUB_TOKEN automatically
+          # provided by GitHub. Alternatively create a fine grained personal
+          # access token with read+write issue permissions
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

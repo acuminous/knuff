@@ -22,8 +22,10 @@ const config = {
   },
 };
 
-// For personal usage use a fine grained personal access token with read+write issue permissions
-// See https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+// If you only ever post reminders to the same repository
+// that runs the action, you can use the GITHUB_TOKEN automatically
+// provided by GitHub. Alternatively create a fine grained personal
+// access token with read+write issue permissions
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const drivers = { github: new GitHubDriver(octokit) };
 const knuff = new Knuff(config, drivers)

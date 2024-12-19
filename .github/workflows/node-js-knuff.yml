@@ -3,7 +3,7 @@ name: Knuff Said!
 on:
   workflow_dispatch: # Allows manual triggering of the workflow
   schedule:
-    - cron: "*/5 * * * *" # Runs every 5 minutes
+    - cron: "*/60 * * * *" # Runs every 60 minutes
 
 jobs:
   run-reminder:

@@ -31,6 +31,7 @@ class Knuff extends EventEmitter {
       }
     }
     if (stats.errors > 0) throw new Error(`${stats.errors} of ${stats.reminders} reminders could not be processed`);
+    return { stats };
   }
 
   async #processReminder(reminder) {

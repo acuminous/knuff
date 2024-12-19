@@ -38,6 +38,18 @@ describe('knuff', () => {
     ],
   };
 
+  const auditDependencies = {
+    id: 'audit-dependencies',
+    schedule: 'DTSTART;TZID=Europe/London:20241219T080000;\nRRULE:FREQ=DAILY;COUNT=1',
+    issue: {
+      title: 'Audit Dependencies',
+      body: 'Run npm audit --fix',
+    },
+    repositories: [
+      'acuminous/foo',
+    ],
+  };
+
   describe('dsl', () => {
 
     it('should require an id', async () => {
@@ -302,32 +314,11 @@ describe('knuff', () => {
     it('should create issues when the next occurence is today', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
-      const drivers = { github: driver };
-      const knuff = new Knuff({ repositories }, drivers, clock);
+      const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/foo',
-          ],
-        },
-        {
-          id: 'audit-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Audit Dependencies',
-            body: 'Run npm audit --fix',
-          },
-          repositories: [
-            'acuminous/foo',
-          ],
-        },
+        opi.set(bumpDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
+        opi.set(auditDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
       ];
       await knuff.process(reminders);
 
@@ -343,21 +334,10 @@ describe('knuff', () => {
       const today = new Date(clock.now());
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
-      const drivers = { github: driver };
-      const knuff = new Knuff({ repositories }, drivers, clock);
+      const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(tomorrow)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/foo',
-          ],
-        },
+        opi.set(bumpDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(tomorrow)};\nRRULE:FREQ=DAILY;COUNT=1`),
       ];
       await knuff.process(reminders);
 
@@ -369,21 +349,10 @@ describe('knuff', () => {
       const today = new Date(clock.now());
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
-      const drivers = { github: driver };
-      const knuff = new Knuff({ repositories }, drivers, clock);
+      const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        {
-          id: 'bump-dependencies',
-          schedule: `DTSTART;TZID=Europe/London:${dtstart(yesterday)};\nRRULE:FREQ=DAILY;COUNT=1`,
-          issue: {
-            title: 'Bump Dependencies',
-            body: 'Bump dependencies for all projects',
-          },
-          repositories: [
-            'acuminous/foo',
-          ],
-        },
+        opi.set(bumpDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(yesterday)};\nRRULE:FREQ=DAILY;COUNT=1`),
       ];
       await knuff.process(reminders);
 
@@ -394,8 +363,7 @@ describe('knuff', () => {
     it('should add the specified labels', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
-      const drivers = { github: driver };
-      const knuff = new Knuff({ repositories }, drivers, clock);
+      const knuff = getKnuff({ github: driver });
 
       const reminders = [
         {
@@ -427,8 +395,7 @@ describe('knuff', () => {
     it('should create issues in all specified repositories', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
-      const drivers = { github: driver };
-      const knuff = new Knuff({ repositories }, drivers, clock);
+      const knuff = getKnuff({ github: driver });
 
       const reminders = [
         {
@@ -486,8 +453,7 @@ describe('knuff', () => {
     it('should suppress duplicate issues', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
-      const drivers = { github: driver };
-      const knuff = new Knuff({ repositories }, drivers, clock);
+      const knuff = getKnuff({ github: driver });
 
       const reminders = [
         {
@@ -527,8 +493,7 @@ describe('knuff', () => {
     it('should report missing repositories', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
-      const drivers = { github: driver };
-      const knuff = new Knuff({ repositories }, drivers, clock);
+      const knuff = getKnuff({ github: driver });
 
       const reminders = [
         {
@@ -558,8 +523,7 @@ describe('knuff', () => {
 
     it('should report invalid schedules', async () => {
       const driver = new StubDriver('github');
-      const drivers = { github: driver };
-      const knuff = new Knuff({ repositories }, drivers, clock);
+      const knuff = getKnuff({ github: driver });
 
       const reminders = [
         {
@@ -591,8 +555,7 @@ describe('knuff', () => {
     it('should continue on failure', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
-      const drivers = { github: driver };
-      const knuff = new Knuff({ repositories }, drivers, clock);
+      const knuff = getKnuff({ github: driver });
 
       const reminders = [
         {
@@ -637,10 +600,13 @@ describe('knuff', () => {
     });
   });
 
-  function getKnuff() {
-    const driver = new StubDriver('github');
-    const drivers = { github: driver };
+  function getKnuff(drivers = getDrivers()) {
     return new Knuff({ repositories }, drivers, clock);
+  }
+
+  function getDrivers() {
+    const driver = new StubDriver('github');
+    return { github: driver };
   }
 
   function dtstart(date) {

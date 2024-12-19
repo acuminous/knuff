@@ -70,7 +70,7 @@ const config = {
 };
 
 const drivers = { github: new GitHubDriver({ authStrategy }) };
-const knuff = new Knuff(config, drivers);
+const knuff = new Knuff(config, drivers).on('error', console.error);
 const reminders = yaml.parse(fs.readFileSync('./path/to/reminders.yaml', 'utf8'));
 await knuff.process(reminders);
 ```

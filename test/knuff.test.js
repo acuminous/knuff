@@ -1,41 +1,303 @@
-const { strictEqual: eq } = require('node:assert');
+const { strictEqual: eq, rejects } = require('node:assert');
 const { describe, it } = require('zunit');
 const { fake: clock } = require('groundhog-day');
+const opi = require('object-path-immutable');
 
 const StubDriver = require('./lib/StubDriver');
-const { Knuff } = require('..');
+const Knuff = require('..');
 
 describe('knuff', () => {
 
+  const repositories = {
+    'acuminous/foo': {
+      organisation: 'acuminous',
+      name: 'foo',
+      driver: 'github',
+    },
+    'acuminous/bar': {
+      organisation: 'acuminous',
+      name: 'bar',
+      driver: 'github',
+    },
+    'acuminous/baz': {
+      organisation: 'acuminous',
+      name: 'baz',
+      driver: 'gitlab',
+    },
+  };
+
+  const bumpDependencies = {
+    id: 'bump-dependencies',
+    schedule: 'DTSTART;TZID=Europe/London:20241219T080000;\nRRULE:FREQ=DAILY;COUNT=1',
+    issue: {
+      title: 'Bump Dependencies',
+      body: 'Bump dependencies for all projects',
+    },
+    repositories: [
+      'acuminous/foo',
+    ],
+  };
+
   describe('dsl', () => {
-    it('should require a schedule');
-    it('should require an issue title');
-    it('should require an issue body');
-    it('should allow one or more issue lables');
-    it('should require at least one repository');
-    it('should allow multiple repositories');
-    it('should report unknown issue attributes');
+
+    it('should require an id', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.del(bumpDependencies, 'id'),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'undefined' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, "must have required property 'id'");
+        return true;
+      });
+    });
+
+    it('should require the id to be a string', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'id', 1),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder '1' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must be string');
+        return true;
+      });
+    });
+
+    it('should allow a description', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'description', 'Some description'),
+      ];
+
+      await knuff.process(reminders);
+    });
+
+    it('should require the description to be a string', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'description', 1),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must be string');
+        return true;
+      });
+    });
+
+    it('should require a schedule', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.del(bumpDependencies, 'schedule'),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, "must have required property 'schedule'");
+        return true;
+      });
+    });
+
+    it('should require the schedule to be a string', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', 1),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must be string');
+        return true;
+      });
+    });
+
+    it('should require an issue title', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.del(bumpDependencies, 'issue.title'),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, "must have required property 'title'");
+        return true;
+      });
+    });
+
+    it('should require the issue title to be a string', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'issue.title', 1),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must be string');
+        return true;
+      });
+    });
+
+    it('should require an issue body', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.del(bumpDependencies, 'issue.body'),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, "must have required property 'body'");
+        return true;
+      });
+    });
+
+    it('should require the issue body to be a string', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'issue.body', 1),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must be string');
+        return true;
+      });
+    });
+
+    it('should allow issue labels', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'issue.labels', []),
+      ];
+
+      await knuff.process(reminders);
+    });
+
+    it('should require the labels to be strings', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'issue.labels', [1]),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must be string');
+        return true;
+      });
+    });
+
+    it('should require issue labels to be unique', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'issue.labels', ['one', 'one']),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must NOT have duplicate items (items ## 1 and 0 are identical)');
+        return true;
+      });
+    });
+
+    it('should require repositories', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.del(bumpDependencies, 'repositories'),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, "must have required property 'repositories'");
+        return true;
+      });
+    });
+
+    it('should require at least one repository', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'repositories', []),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must NOT have fewer than 1 items');
+        return true;
+      });
+    });
+
+    it('should require repositories to be strings', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'repositories', [1]),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must be string');
+        return true;
+      });
+    });
+
+    it('should require repositories to be unique', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'repositories', ['one', 'one']),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must NOT have duplicate items (items ## 1 and 0 are identical)');
+        return true;
+      });
+    });
+
+    it('should report unknown reminder attributes', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'wibble', 1),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must NOT have additional properties');
+        return true;
+      });
+    });
+
+    it('should report unknown issue attributes', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'issue.wibble', 1),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 1);
+        eq(error.details[0].message, 'must NOT have additional properties');
+        return true;
+      });
+    });
   });
 
   describe('issue creation', () => {
-
-    const repositories = {
-      'acuminous/foo': {
-        organisation: 'acuminous',
-        name: 'foo',
-        driver: 'github',
-      },
-      'acuminous/bar': {
-        organisation: 'acuminous',
-        name: 'bar',
-        driver: 'github',
-      },
-      'acuminous/baz': {
-        organisation: 'acuminous',
-        name: 'baz',
-        driver: 'gitlab',
-      },
-    };
 
     it('should create issues when the next occurence is today', async () => {
       const today = new Date(clock.now());
@@ -261,12 +523,125 @@ describe('knuff', () => {
   });
 
   describe('error handling', () => {
-    it('should report missing repositories');
-    it('should report repositories without auth credentials');
-    it('should report invalid schedules');
-    it('should continue on failure');
-    it('should report all failures');
+
+    it('should report missing repositories', async () => {
+      const today = new Date(clock.now());
+      const driver = new StubDriver('github');
+      const drivers = { github: driver };
+      const knuff = new Knuff({ repositories }, drivers, clock);
+
+      const reminders = [
+        {
+          id: 'bump-dependencies',
+          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
+          issue: {
+            title: 'Bump Dependencies',
+            body: 'Bump dependencies for all projects',
+          },
+          repositories: [
+            'acuminous/meh',
+          ],
+        },
+      ];
+
+      const errors = [];
+      knuff.on('error', (error) => errors.push(error));
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, '1 of 1 reminders could not be processed');
+        return true;
+      });
+
+      eq(errors.length, 1);
+      eq(errors[0].message, "Reminder 'bump-dependencies' has an unknown repository 'acuminous/meh'");
+    });
+
+    it('should report invalid schedules', async () => {
+      const driver = new StubDriver('github');
+      const drivers = { github: driver };
+      const knuff = new Knuff({ repositories }, drivers, clock);
+
+      const reminders = [
+        {
+          id: 'bump-dependencies',
+          schedule: 'DTSTART:20241201T08x000Z;\nRRULE:FREQ=DAILY;COUNT=1',
+          issue: {
+            title: 'Bump Dependencies',
+            body: 'Bump dependencies for all projects',
+          },
+          repositories: [
+            'acuminous/foo',
+          ],
+        },
+      ];
+
+      const errors = [];
+      knuff.on('error', (error) => errors.push(error));
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, '1 of 1 reminders could not be processed');
+        return true;
+      });
+
+      eq(errors.length, 1);
+      eq(errors[0].message, "Reminder 'bump-dependencies' has an invalid schedule 'DTSTART:20241201T08x000Z;\nRRULE:FREQ=DAILY;COUNT=1'");
+      eq(errors[0].cause.message, 'Invalid UNTIL value: 20241201T08x000Z');
+    });
+
+    it('should continue on failure', async () => {
+      const today = new Date(clock.now());
+      const driver = new StubDriver('github');
+      const drivers = { github: driver };
+      const knuff = new Knuff({ repositories }, drivers, clock);
+
+      const reminders = [
+        {
+          id: 'bump-dependencies',
+          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
+          issue: {
+            title: 'Bump Dependencies',
+            body: 'Bump dependencies for all projects',
+          },
+          repositories: [
+            'acuminous/meh',
+          ],
+        },
+        {
+          id: 'audit-dependencies',
+          schedule: `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
+          issue: {
+            title: 'Audit Dependencies',
+            body: 'Run npm audit --fix',
+          },
+          repositories: [
+            'acuminous/foo',
+          ],
+        },
+      ];
+
+      const errors = [];
+      knuff.on('error', (error) => errors.push(error));
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, '1 of 2 reminders could not be processed');
+        return true;
+      });
+
+      eq(errors.length, 1);
+      eq(errors[0].message, "Reminder 'bump-dependencies' has an unknown repository 'acuminous/meh'");
+
+      const issues = driver.repositories('acuminous/foo').issues;
+      eq(issues.length, 1);
+      eq(issues[0].title, 'Audit Dependencies');
+      eq(issues[0].body, 'Run npm audit --fix');
+    });
   });
+
+  function getKnuff() {
+    const driver = new StubDriver('github');
+    const drivers = { github: driver };
+    return new Knuff({ repositories }, drivers, clock);
+  }
 
   function dtstart(date) {
     const year = date.getUTCFullYear();

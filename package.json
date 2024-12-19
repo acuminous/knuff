@@ -23,6 +23,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "ajv": "^8.17.1",
     "groundhog-day": "^3.0.0",
     "rrule": "^2.8.1"
   },
@@ -32,9 +33,10 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.2.11",
     "nyc": "^17.1.0",
+    "object-path-immutable": "^4.1.2",
     "zunit": "^4.0.2"
   },
   "lint-staged": {
     "*.js": "eslint --fix"
-  }  
+  }
 }

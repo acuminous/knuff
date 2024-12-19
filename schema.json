@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "A unique identifier for the reminder"
+    },
+    "description": {
+      "type": "string",
+      "description": "An optional description of the reminder",
+      "nullable": true
+    },
+    "schedule": {
+      "type": "string",
+      "description": "The RRULE schedule for the reminder"
+    },
+    "issue": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the issue"
+        },
+        "body": {
+          "type": "string",
+          "description": "The body content of the issue"
+        },
+        "labels": {
+          "type": "array",
+          "description": "An optional array of labels for the issue",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": []
+        }
+      },
+      "required": ["title", "body"],
+      "additionalProperties": false          
+    },
+    "repositories": {
+      "type": "array",
+      "description": "A list of repositories where the issue should be created",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,        
+        "minItems": 1
+      }
+    },
+  "additionalProperties": false,    
+  "required": ["id", "schedule", "issue", "repositories"]
+}

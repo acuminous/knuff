@@ -1,8 +1,9 @@
-/* eslint-disable no-console, import/no-extraneous-dependencies */
-const fs = require('node:fs');
-const yaml = require('yaml');
-const Knuff = require('..');
-const StubDriver = require('../test/lib/StubDriver');
+/* eslint-disable no-console,import/no-unresolved,import/extensions */
+import fs from 'node:fs';
+import yaml from 'yaml';
+import { Octokit } from '@octokit/rest';
+import GitHubDriver from 'knuff-github-driver';
+import Knuff from 'knuff/index.js';
 
 const pathToReminders = process.argv[2] || 'reminders.yaml';
 
@@ -21,7 +22,10 @@ const config = {
   },
 };
 
-const drivers = { github: new StubDriver('test') };
+// For personal usage use a fine grained personal access token with read+write issue permissions
+// See https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+const drivers = { github: new GitHubDriver(octokit) };
 const knuff = new Knuff(config, drivers)
   .on('error', console.error)
   .on('progress', console.log);

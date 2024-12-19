@@ -17,4 +17,4 @@ jobs:
         run: npm ci
 
       - name: Execute Knuff
-        run: node example/knuff.js ./example/reminders.yaml
+        run: node index.js reminders.yaml

@@ -1,0 +1,17 @@
+{
+  "name": "knuff-personal-example",
+  "version": "1.0.0",
+  "description": "An example for personal use",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Stephen Cresswell",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/rest": "^21.0.2",
+    "knuff-github-driver": "^1.0.0",
+    "yaml": "^2.6.1"
+  }
+}

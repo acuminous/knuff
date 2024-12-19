@@ -1,0 +1,20 @@
+name: Knuff Said!
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+  schedule:
+    - cron: "*/5 * * * *" # Runs every 5 minutes
+
+jobs:
+  run-reminder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies with npm ci
+        run: npm ci
+
+      - name: Execute Knuff
+        run: node example/knuff.js ./example/reminders.yaml

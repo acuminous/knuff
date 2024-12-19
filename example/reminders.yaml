@@ -1,0 +1,29 @@
+- id: 'test-reminder-1'
+  schedule: |
+    RRULE:FREQ=MINUTELY
+  issue:
+    title: 'Test Reminder'
+    body: |
+      This is a test reminder
+      - [ ] Do something
+      - [ ] Do something else
+    labels:
+      - 'Reminder'
+      - 'Critical'
+  repositories: 
+    - 'acuminous/foo'
+
+- id: 'test-reminder-2'
+  schedule: |
+    RRULE:FREQ=MINUTELY
+  issue:
+    title: 'Test Reminder'
+    body: |
+      This is a test reminder
+      - [ ] Do something
+      - [ ] Do something else
+    labels:
+      - 'Reminder'
+      - 'Critical'
+  repositories: 
+    - 'acuminous/foo'    

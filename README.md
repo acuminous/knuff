@@ -96,7 +96,7 @@ const drivers = { github: new GitHubDriver({ authStrategy }) };
 const knuff = new Knuff(config, drivers)
   .on('error', console.error)
   .on('progress', console.log)
-const reminders = yaml.parse(fs.readFileSync('./reminders.yaml', 'utf8'));
+const reminders = yaml.parse(fs.readFileSync(pathToReminders, 'utf8'));
 
 knuff.process(reminders).then((stats) => {
   console.log(`Successfully processed ${stats.reminders} reminders`);

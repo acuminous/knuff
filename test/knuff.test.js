@@ -529,15 +529,9 @@ describe('knuff', () => {
       const knuff = getKnuff({ github: driver });
 
       const reminders = [
-        opi.wrap(bumpDependencies)
-          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
-          .value(),
-        opi.wrap(bumpDependencies)
-          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
-          .value(),
-        opi.wrap(auditDependencies)
-          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(tomorrow)};\nRRULE:FREQ=DAILY;COUNT=1`)
-          .value(),
+        opi.set(bumpDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
+        opi.set(bumpDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
+        opi.set(auditDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(tomorrow)};\nRRULE:FREQ=DAILY;COUNT=1`),
       ];
 
       const stats = await knuff.process(reminders);
@@ -546,6 +540,49 @@ describe('knuff', () => {
       eq(stats.duplicates, 1);
       eq(stats.created, 1);
       eq(stats.errors, 0);
+    });
+  });
+
+  describe('progress', () => {
+    it('should report progress every 10 reminders by default', async () => {
+      const today = new Date(clock.now());
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({ github: driver });
+
+      const reminders = new Array(100).fill().map((_, index) => {
+        return opi.wrap(bumpDependencies)
+          .set('id', `reminder-${index + 1}`)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .value();
+      });
+
+      const reports = [];
+      knuff.on('progress', (stats) => reports.push(stats));
+
+      await knuff.process(reminders);
+      eq(reports.length, 10);
+      eq(reports[0].due, 10);
+    });
+
+    it('should report progress every N reminders when specified', async () => {
+      const today = new Date(clock.now());
+      const driver = new StubDriver('github');
+      const drivers = { github: driver };
+      const knuff = new Knuff({ progress: 50, repositories }, drivers, clock);
+
+      const reminders = new Array(100).fill().map((_, index) => {
+        return opi.wrap(bumpDependencies)
+          .set('id', `reminder-${index + 1}`)
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .value();
+      });
+
+      const reports = [];
+      knuff.on('progress', (stats) => reports.push(stats));
+
+      await knuff.process(reminders);
+      eq(reports.length, 2);
+      eq(reports[0].due, 50);
     });
   });
 

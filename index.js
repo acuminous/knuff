@@ -4,6 +4,11 @@ const { real } = require('groundhog-day');
 const Ajv = require('ajv');
 const schema = require('./schema.json');
 
+const defaults = {
+  progress: 10,
+  repositories: {},
+};
+
 class Knuff extends EventEmitter {
 
   #config;
@@ -14,18 +19,18 @@ class Knuff extends EventEmitter {
 
   constructor(config, drivers, clock = real) {
     super();
-    this.#config = config;
+    this.#config = { ...defaults, ...config };
     this.#drivers = drivers;
     this.#clock = clock;
     this.#ajvValidate = new Ajv({ allErrors: true }).compile(schema);
   }
 
   async process(reminders) {
-    this.#stats = { reminders: 0, due: 0, duplicates: 0, created: 0, errors: 0 };
+    this.#stats = { reminders: reminders.length, due: 0, duplicates: 0, created: 0, errors: 0 };
     for (let i = 0; i < reminders.length; i++) {
       try {
-        this.#stats.reminders++;
         await this.#processReminder(reminders[i]);
+        if ((i + 1) % this.#config.progress === 0) this.emit('progress', { ...this.#stats });
       } catch (error) {
         this.#stats.errors++;
         this.emit('error', error);

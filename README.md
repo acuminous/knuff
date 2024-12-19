@@ -88,11 +88,14 @@ const config = {
       name: 'bar',
       driver: 'github'
     },    
-  }
+  },
+  progress: 100, // Emits a progress event every 100 reminders 
 };
 
 const drivers = { github: new GitHubDriver({ authStrategy }) };
-const knuff = new Knuff(config, drivers).on('error', console.error);
+const knuff = new Knuff(config, drivers)
+  .on('error', console.error)
+  .on('progress', console.log)
 const reminders = yaml.parse(fs.readFileSync('./reminders.yaml', 'utf8'));
 
 knuff.process(reminders).then((stats) => {

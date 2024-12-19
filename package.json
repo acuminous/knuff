@@ -2,6 +2,12 @@
   "name": "@acuminous/knuff",
   "version": "1.0.0",
   "description": "Reminds teams of recurring or future work by creating tasks in your issue tracker of choice",
+  "main": "index.js",
+  "license": "ISC",
+  "author": "Stephen Cresswell",
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "todo",
     "reminder",
@@ -12,8 +18,6 @@
     "action",
     "issue"
   ],
-  "author": "Stephen Cresswell",
-  "main": "index.js",
   "scripts": {
     "lint": "eslint .",
     "lint-staged": "lint-staged",
@@ -21,7 +25,6 @@
     "coverage": "nyc --report html --reporter lcov --reporter text-summary zUnit",
     "prepare": "husky install"
   },
-  "license": "ISC",
   "dependencies": {
     "ajv": "^8.17.1",
     "groundhog-day": "^3.0.0",

@@ -1,4 +1,4 @@
-# Knuff - Reminders As Code
+# Knuff - *Reminders as Code*
 
 [![NPM version](https://img.shields.io/npm/v/@acuminous/knuff.svg?style=flat-square)](https://www.npmjs.com/package/@acuminous/knuff)
 [![Node.js CI](https://github.com/acuminous/knuff/workflows/Node.js%20CI/badge.svg)](https://github.com/acuminous/actions?query=workflow%3A%22Node.js+CI%22)
@@ -6,10 +6,12 @@
 [![Test Coverage](https://codeclimate.com/github/acuminous/knuff/badges/coverage.svg)](https://codeclimate.com/github/acuminous/knuff/coverage)
 [![Discover zUnit](https://img.shields.io/badge/Discover-zUnit-brightgreen)](https://www.npmjs.com/package/zunit)
 
-Knuff is an automated reminder tool which creates tickets in your issue tracker of choice (e.g. GitHub). It is designed to be run from an external scheduler such as the one provided by [GitHub Actions](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule). You can use it to remind you about both one off tasks and recurring ones such as...
+Knuff is an automated reminder tool which creates tickets in your issue tracker of choice (e.g. GitHub). It is designed to be run from an external scheduler such as the one provided by [GitHub Actions](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule). You can use it to remind you about one off and recurring tasks such as...
 
-- regenerate long lived API keys / auth tokens before they expire
-- update software dependencies on a monthly cadence
+- regenerating long lived API keys / auth tokens before they expire
+- updating software dependencies on a monthly cadence
+- domain name renewals
+- etc
 
 Knuff is also a German word meaning nudge or poke.
 

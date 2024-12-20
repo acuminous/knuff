@@ -1,9 +1,9 @@
 # Knuff
 
-[![NPM version](https://img.shields.io/npm/v/knuff.svg?style=flat-square)](https://www.npmjs.com/package/knuff)
-[![Node.js CI](https://github.com/acuminous/knuff/workflows/Node.js%20CI/badge.svg)](https://github.com/acuminous/knuff/actions?query=workflow%3A%22Node.js+CI%22)
-[![Code Climate](https://codeclimate.com/github/acuminous/knuff/badges/gpa.svg)](https://codeclimate.com/github/acuminous/knuff)
-[![Test Coverage](https://codeclimate.com/github/acuminous/knuff/badges/coverage.svg)](https://codeclimate.com/github/acuminous/knuff/coverage)
+[![NPM version](https://img.shields.io/npm/v/@acuminous/knuff.svg?style=flat-square)](https://www.npmjs.com/package/@acuminous/knuff)
+[![Node.js CI](https://github.com/acuminous/@acuminous/knuff/workflows/Node.js%20CI/badge.svg)](https://github.com/acuminous/@acuminous/knuff/actions?query=workflow%3A%22Node.js+CI%22)
+[![Code Climate](https://codeclimate.com/github/acuminous/@acuminous/knuff/badges/gpa.svg)](https://codeclimate.com/github/acuminous/@acuminous/knuff)
+[![Test Coverage](https://codeclimate.com/github/acuminous/@acuminous/knuff/badges/coverage.svg)](https://codeclimate.com/github/acuminous/@acuminous/knuff/coverage)
 [![Discover zUnit](https://img.shields.io/badge/Discover-zUnit-brightgreen)](https://www.npmjs.com/package/zunit)
 
 Knuff is an automated reminder tool which creates tickets in your issue tracker of choice (e.g. GitHub). It is designed to be run from an external scheduler such as the one provided by [GitHub Actions](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule). You can use it to remind you to

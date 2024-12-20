@@ -11,7 +11,6 @@ Knuff is an automated reminder tool which creates tickets in your issue tracker 
 - regenerating long lived API keys / auth tokens before they expire
 - updating software dependencies on a monthly cadence
 - domain name renewals
-- etc
 
 Knuff is also a German word meaning nudge or poke.
 

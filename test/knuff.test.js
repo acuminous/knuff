@@ -29,10 +29,8 @@ describe('knuff', () => {
   const bumpDependencies = {
     id: 'bump-dependencies',
     schedule: 'DTSTART;TZID=Europe/London:20241219T080000;\nRRULE:FREQ=DAILY;COUNT=1',
-    issue: {
-      title: 'Bump Dependencies',
-      body: 'Bump dependencies for all projects',
-    },
+    title: 'Bump Dependencies',
+    body: 'Bump dependencies for all projects',
     repositories: [
       'acuminous/foo',
     ],
@@ -41,10 +39,8 @@ describe('knuff', () => {
   const auditDependencies = {
     id: 'audit-dependencies',
     schedule: 'DTSTART;TZID=Europe/London:20241219T080000;\nRRULE:FREQ=DAILY;COUNT=1',
-    issue: {
-      title: 'Audit Dependencies',
-      body: 'Run npm audit --fix',
-    },
+    title: 'Audit Dependencies',
+    body: 'Run npm audit --fix',
     repositories: [
       'acuminous/foo',
     ],
@@ -131,10 +127,10 @@ describe('knuff', () => {
       });
     });
 
-    it('should require an issue title', async () => {
+    it('should require a title', async () => {
       const knuff = getKnuff();
       const reminders = [
-        opi.del(bumpDependencies, 'issue.title'),
+        opi.del(bumpDependencies, 'title'),
       ];
 
       await rejects(() => knuff.process(reminders), (error) => {
@@ -145,10 +141,10 @@ describe('knuff', () => {
       });
     });
 
-    it('should require the issue title to be a string', async () => {
+    it('should require the title to be a string', async () => {
       const knuff = getKnuff();
       const reminders = [
-        opi.set(bumpDependencies, 'issue.title', 1),
+        opi.set(bumpDependencies, 'title', 1),
       ];
 
       await rejects(() => knuff.process(reminders), (error) => {
@@ -159,10 +155,10 @@ describe('knuff', () => {
       });
     });
 
-    it('should require an issue body', async () => {
+    it('should require a body', async () => {
       const knuff = getKnuff();
       const reminders = [
-        opi.del(bumpDependencies, 'issue.body'),
+        opi.del(bumpDependencies, 'body'),
       ];
 
       await rejects(() => knuff.process(reminders), (error) => {
@@ -173,10 +169,10 @@ describe('knuff', () => {
       });
     });
 
-    it('should require the issue body to be a string', async () => {
+    it('should require the body to be a string', async () => {
       const knuff = getKnuff();
       const reminders = [
-        opi.set(bumpDependencies, 'issue.body', 1),
+        opi.set(bumpDependencies, 'body', 1),
       ];
 
       await rejects(() => knuff.process(reminders), (error) => {
@@ -187,10 +183,10 @@ describe('knuff', () => {
       });
     });
 
-    it('should allow issue labels', async () => {
+    it('should allow labels', async () => {
       const knuff = getKnuff();
       const reminders = [
-        opi.set(bumpDependencies, 'issue.labels', []),
+        opi.set(bumpDependencies, 'labels', []),
       ];
 
       await knuff.process(reminders);
@@ -199,7 +195,7 @@ describe('knuff', () => {
     it('should require the labels to be strings', async () => {
       const knuff = getKnuff();
       const reminders = [
-        opi.set(bumpDependencies, 'issue.labels', [1]),
+        opi.set(bumpDependencies, 'labels', [1]),
       ];
 
       await rejects(() => knuff.process(reminders), (error) => {
@@ -210,10 +206,10 @@ describe('knuff', () => {
       });
     });
 
-    it('should require issue labels to be unique', async () => {
+    it('should require labels to be unique', async () => {
       const knuff = getKnuff();
       const reminders = [
-        opi.set(bumpDependencies, 'issue.labels', ['one', 'one']),
+        opi.set(bumpDependencies, 'labels', ['one', 'one']),
       ];
 
       await rejects(() => knuff.process(reminders), (error) => {
@@ -293,25 +289,11 @@ describe('knuff', () => {
         return true;
       });
     });
-
-    it('should report unknown issue attributes', async () => {
-      const knuff = getKnuff();
-      const reminders = [
-        opi.set(bumpDependencies, 'issue.wibble', 1),
-      ];
-
-      await rejects(() => knuff.process(reminders), (error) => {
-        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
-        eq(error.details.length, 1);
-        eq(error.details[0].message, 'must NOT have additional properties');
-        return true;
-      });
-    });
   });
 
-  describe('issue creation', () => {
+  describe('reminder creation', () => {
 
-    it('should create issues when the next occurence is today', async () => {
+    it('should create reminders when the next occurence is today', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
       const knuff = getKnuff({ github: driver });
@@ -322,15 +304,15 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const issues = driver.repositories('acuminous/foo').issues;
-      eq(issues.length, 2);
-      eq(issues[0].title, 'Bump Dependencies');
-      eq(issues[0].body, 'Bump dependencies for all projects');
-      eq(issues[1].title, 'Audit Dependencies');
-      eq(issues[1].body, 'Run npm audit --fix');
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 2);
+      eq(fooReminders[0].title, 'Bump Dependencies');
+      eq(fooReminders[0].body, 'Bump dependencies for all projects');
+      eq(fooReminders[1].title, 'Audit Dependencies');
+      eq(fooReminders[1].body, 'Run npm audit --fix');
     });
 
-    it('should not create issues when the next occurence is after today', async () => {
+    it('should not create reminders when the next occurence is after today', async () => {
       const today = new Date(clock.now());
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
@@ -341,11 +323,11 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const issues = driver.repositories('acuminous/foo').issues;
-      eq(issues.length, 0);
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 0);
     });
 
-    it('should not create issues when the last occurrence was before today', async () => {
+    it('should not create reminders when the last occurrence was before today', async () => {
       const today = new Date(clock.now());
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
@@ -356,8 +338,8 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const issues = driver.repositories('acuminous/foo').issues;
-      eq(issues.length, 0);
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 0);
     });
 
     it('should add the specified labels', async () => {
@@ -368,20 +350,20 @@ describe('knuff', () => {
       const reminders = [
         opi.wrap(bumpDependencies)
           .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
-          .set('issue.labels', ['chore', 'reminder'])
+          .set('labels', ['chore', 'reminder'])
           .value(),
       ];
       await knuff.process(reminders);
 
-      const issues = driver.repositories('acuminous/foo').issues;
-      eq(issues.length, 1);
-      eq(issues[0].labels.length, 3);
-      eq(issues[0].labels[0], 'chore');
-      eq(issues[0].labels[1], 'reminder');
-      eq(issues[0].labels[2], 'bump-dependencies');
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
+      eq(fooReminders[0].labels.length, 3);
+      eq(fooReminders[0].labels[0], 'chore');
+      eq(fooReminders[0].labels[1], 'reminder');
+      eq(fooReminders[0].labels[2], 'bump-dependencies');
     });
 
-    it('should create issues in all specified repositories', async () => {
+    it('should create reminders in all specified repositories', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
       const knuff = getKnuff({ github: driver });
@@ -394,14 +376,14 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooIssues = driver.repositories('acuminous/foo').issues;
-      eq(fooIssues.length, 1);
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
 
-      const barIssues = driver.repositories('acuminous/bar').issues;
-      eq(barIssues.length, 1);
+      const barReminders = driver.repositories('acuminous/bar').reminders;
+      eq(barReminders.length, 1);
     });
 
-    it('should create issues using the correct driver', async () => {
+    it('should create reminders using the correct driver', async () => {
       const today = new Date(clock.now());
       const driver1 = new StubDriver('github');
       const driver2 = new StubDriver('gitlab');
@@ -416,14 +398,14 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const githubIssues = driver1.repositories('acuminous/baz').issues;
-      eq(githubIssues.length, 0);
+      const githubReminders = driver1.repositories('acuminous/baz').reminders;
+      eq(githubReminders.length, 0);
 
-      const gitlabIssues = driver2.repositories('acuminous/baz').issues;
-      eq(gitlabIssues.length, 1);
+      const gitlabReminders = driver2.repositories('acuminous/baz').reminders;
+      eq(gitlabReminders.length, 1);
     });
 
-    it('should suppress duplicate issues', async () => {
+    it('should suppress duplicate reminders', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
       const knuff = getKnuff({ github: driver });
@@ -434,10 +416,10 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const issues = driver.repositories('acuminous/foo').issues;
-      eq(issues.length, 1);
-      eq(issues[0].title, 'Bump Dependencies');
-      eq(issues[0].body, 'Bump dependencies for all projects');
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
+      eq(fooReminders[0].title, 'Bump Dependencies');
+      eq(fooReminders[0].body, 'Bump dependencies for all projects');
     });
   });
 
@@ -514,10 +496,10 @@ describe('knuff', () => {
       eq(errors.length, 1);
       eq(errors[0].message, "Reminder 'bump-dependencies' has an unknown repository 'acuminous/meh'");
 
-      const issues = driver.repositories('acuminous/foo').issues;
-      eq(issues.length, 1);
-      eq(issues[0].title, 'Audit Dependencies');
-      eq(issues[0].body, 'Run npm audit --fix');
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
+      eq(fooReminders[0].title, 'Audit Dependencies');
+      eq(fooReminders[0].body, 'Run npm audit --fix');
     });
   });
 

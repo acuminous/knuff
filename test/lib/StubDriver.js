@@ -11,17 +11,17 @@ class StubDriver {
     return this.#repositories[id] || this.#initRepository();
   }
 
-  async findIssue(repository, reminderId) {
+  async findReminder(repository, reminderId) {
     const key = this.#getRepositoryKey(repository.owner, repository.name);
-    const { issues } = this.#repositories[key] || this.#initRepository();
-    return issues.find((issue) => issue.labels.find((label) => label === reminderId));
+    const { reminders } = this.#repositories[key] || this.#initRepository();
+    return reminders.find((reminder) => reminder.labels.find((label) => label === reminderId));
   }
 
-  async createIssue(repository, reminderId, issue) {
+  async createReminder(repository, reminder) {
     const key = this.#getRepositoryKey(repository.owner, repository.name);
     this.#repositories[key] = this.#repositories[key] || this.#initRepository();
-    const labels = [].concat(issue.labels || [], reminderId);
-    this.#repositories[key].issues.push({ ...issue, labels });
+    const labels = [].concat(reminder.labels || [], reminder.id);
+    this.#repositories[key].reminders.push({ ...reminder, labels });
   }
 
   #getRepositoryKey(owner, name) {
@@ -29,7 +29,7 @@ class StubDriver {
   }
 
   #initRepository() {
-    return { issues: [] };
+    return { reminders: [] };
   }
 }
 

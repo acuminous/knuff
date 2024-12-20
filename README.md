@@ -6,10 +6,10 @@
 [![Test Coverage](https://codeclimate.com/github/acuminous/knuff/badges/coverage.svg)](https://codeclimate.com/github/acuminous/knuff/coverage)
 [![Discover zUnit](https://img.shields.io/badge/Discover-zUnit-brightgreen)](https://www.npmjs.com/package/zunit)
 
-Knuff is an automated reminder tool which creates tickets in your issue tracker of choice (e.g. GitHub). It is designed to be run from an external scheduler such as the one provided by [GitHub Actions](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule). You can use it to remind you to
+Knuff is an automated reminder tool which creates tickets in your issue tracker of choice (e.g. GitHub). It is designed to be run from an external scheduler such as the one provided by [GitHub Actions](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule). You can use it to remind you about both one off tasks and recurring ones such as...
 
 - regenerate long lived API keys / auth tokens before they expire
-- update software dependencies on a monthly cycle
+- update software dependencies on a monthly cadence
 
 Knuff is also a German word meaning nudge or poke.
 
@@ -26,15 +26,15 @@ A `Reminder` needs
 1. An id for duplicate checking and error reporting
 2. A schedule adhering to [rfc5545](https://datatracker.ietf.org/doc/html/rfc5545) RRULE format (more accessibly documented by the node [rrule](https://www.npmjs.com/package/rrule) package)
 3. Issue details (title and body) describing the work that needs to be done
-4. One or more repositories the issue will be posted to
+4. One or more repositories the reminder will be posted to
 
-Knuff will process a list of reminders, creating issues in the relevant repositories according to the schedule. Knuff will only create the issue if one not already open, and will continue if it encounters an error. 
+Knuff will process a list of reminders, posting those that are due to the relevant repositories according to the schedule. Knuff will only post the reminder if a matching one is not already open, and will continue on error.
 
 ### The Reminders File
 Knuff works with JSON, but since it's so easy to convert YAML to JSON, and because YAML is better for multiline strings, it is a good choice. An annoated reminders file is below...
 
 ```yaml
-# Creates an issue in acuminous/foo repository at 08:00 on the 1st of July 2025
+# Creates a reminder in acuminous/foo repository at 08:00 on the 1st of July 2025
 
   # Required. Must be unique within the reminders file
 - id: 'update-contentful-api-key'
@@ -49,24 +49,23 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
     DTSTART;TZID=Europe/London:20250701T080000
     RRULE:FREQ=DAILY;COUNT=1
 
-  issue:
-    # Required. This will be the title of the issue
-    title: 'Update Contenful API Key'
+  # Required. This will be the title of the reminder
+  title: 'Update Contenful API Key'
 
-    # Required. This will be the body of the issue
-    body: |
-      The Contentful API Key expires on the 14th of July 2025.
-      - [ ] Regenerate the Contentful API Key
-      - [ ] Update AWS Secrets Manager
-      - [ ] Redeploy the website
-      - [ ] Update the reminder for next year
+  # Required. This will be the body of the reminder
+  body: |
+    The Contentful API Key expires on the 14th of July 2025.
+    - [ ] Regenerate the Contentful API Key
+    - [ ] Update AWS Secrets Manager
+    - [ ] Redeploy the website
+    - [ ] Update the reminder for next year
 
-    # Optional. Knuff will append the reminder id to the issue labels and use it prevent creating duplicates
-    labels:
-      - 'Reminder'
-      - 'Critical'
+  # Optional. Knuff will append the reminder id to the reminder labels and use it prevent creating duplicates
+  labels:
+    - 'Reminder'
+    - 'Critical'
 
-  # Required. The list of repositories to post the issue to
+  # Required. The list of repositories to post the reminder to
   repositories: 
     - 'acuminous/foo'
 ```

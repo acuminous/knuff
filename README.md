@@ -44,12 +44,6 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
   description: |
     The Contentful API key expires yearly. See https://github.com/acuminous/foo/blog/master/README.md#api-key for more details
 
-  # Required. See https://datatracker.ietf.org/doc/html/rfc5545 
-  # See also https://www.npmjs.com/package/rrule
-  schedule: |
-    DTSTART;TZID=Europe/London:20250701T080000
-    RRULE:FREQ=DAILY;COUNT=1
-
   # Required. This will be the title of the reminder
   title: 'Update Contenful API Key'
 
@@ -65,6 +59,12 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
   labels:
     - 'Reminder'
     - 'Critical'
+
+  # Required. See https://datatracker.ietf.org/doc/html/rfc5545 
+  # See also https://www.npmjs.com/package/rrule
+  schedule: |
+    DTSTART;TZID=Europe/London:20250701T080000
+    RRULE:FREQ=DAILY;COUNT=1
 
   # Required. The list of repositories to post the reminder to
   repositories: 

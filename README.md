@@ -66,13 +66,13 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
     - 'acuminous/foo'
 ```
 
-### Processing Reminders
-To process the reminders you need to write a script that will read the reminder file. You also need to configure the Repository Drivers. The drivers are published separately to this package. At time of writing the following drivers exist.
+### Generating Reminders
+To generate the reminders you need a script that will process the reminder file. You also need to configure the repository drivers. The drivers are published separately to this package. At time of writing the following drivers exist.
 
 - [GitHub Driver](https://www.npmjs.com/package/knuff-github-driver)
 - [JIRA Driver](https://www.youtube.com/watch?v=LPCUAgzUt2k)
 
-An example script is as follows...
+An example script suitable for personal use is as follows...
 
 ```js
 import fs from 'node:fs';
@@ -98,8 +98,6 @@ const config = {
   },
 };
 
-// For personal usage use a fine grained personal access token with read+write issue permissions
-// See https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const drivers = { github: new GitHubDriver(octokit) };
 const knuff = new Knuff(config, drivers)
@@ -142,4 +140,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
-If you only ever create reminders in the same repository as the action, you do not need to use a personal access token, GitHub magically provides one for you. See https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication
+If you only ever create reminders in the same repository as the action, you can use the GITHUB_TOKEN magically provided by GitHub. If you want to create reminders in multiple repositories you can use a fine-grained personal access token with read+write issue permissions. If you intend to use Knuff in an organisation with a large number of teams and repositories you may find you are rate limited. In this case your best option is to register a GitHub App and use an installation token, however the token acquisition and refresh process is cumbersome.
+
+

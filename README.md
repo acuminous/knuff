@@ -15,6 +15,11 @@ Knuff is also a German word meaning nudge or poke.
 
 ## Getting Started
 
+### Installation
+```
+npm i @acuminous/knuff
+```
+
 ### Reminders
 A `Reminder` needs 
 
@@ -69,7 +74,7 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
 ### Generating Reminders
 To generate the reminders you need a script that will process the reminder file. You also need to configure the repository drivers. The drivers are published separately to this package. At time of writing the following drivers exist.
 
-- [GitHub Driver](https://www.npmjs.com/package/knuff-github-driver)
+- [GitHub Driver](https://www.npmjs.com/package/@acuminous/knuff-github-driver)
 - [JIRA Driver](https://www.youtube.com/watch?v=LPCUAgzUt2k)
 
 An example script suitable for personal use is as follows...

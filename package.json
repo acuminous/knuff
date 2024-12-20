@@ -1,6 +1,6 @@
 {
   "name": "@acuminous/knuff",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Reminds teams of recurring or future work by creating tasks in your issue tracker of choice",
   "main": "index.js",
   "license": "ISC",

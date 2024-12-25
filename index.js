@@ -93,7 +93,7 @@ class Knuff extends EventEmitter {
       const repository = this.#config.repositories[repositoryId];
       if (!repository) throw new Error(`Reminder '${reminder.id}' has an unknown repository '${repositoryId}'`);
       const driver = this.#drivers[repository.driver];
-      const isDuplicate = await driver.findReminder(repository, reminder.id);
+      const isDuplicate = await driver.findReminder(repository, reminder);
       if (isDuplicate) {
         this.#stats.duplicates++;
       } else {

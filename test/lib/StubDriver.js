@@ -11,10 +11,10 @@ class StubDriver {
     return this.#repositories[id] || this.#initRepository();
   }
 
-  async findReminder(repository, reminderId) {
+  async findReminder(repository, reminder) {
     const key = this.#getRepositoryKey(repository.owner, repository.name);
     const { reminders } = this.#repositories[key] || this.#initRepository();
-    return reminders.find((reminder) => reminder.labels.find((label) => label === reminderId));
+    return reminders.find((candidate) => candidate.labels.find((label) => label === reminder.id));
   }
 
   async createReminder(repository, reminder) {

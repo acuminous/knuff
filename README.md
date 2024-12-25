@@ -153,4 +153,59 @@ jobs:
 ```
 If you only ever create reminders in the same repository as the action, you can use the GITHUB_TOKEN magically provided by GitHub. If you want to create reminders in multiple repositories you can use a fine-grained personal access token with read+write issue permissions, and store it as an action secret. If you intend to use Knuff with a large number of teams and repositories you may find you are rate limited. In this case your best option is to register a GitHub App and use an installation token, however the token acquisition and refresh process is cumbersome.
 
+### Custom Drivers
+Developing a custom driver is simple, you just need to write a class that implements the Driver interface and configure it in your Knuff script, e.g.
 
+```ts
+type Repository = {
+  id: string;
+  owner: string;
+  name: string;
+  driver: string;
+};
+
+type Reminder = {
+  id?: string;
+  title: string;
+  body: string;
+  schedule: string | string[];
+  repositories: string[];
+};
+
+interface Driver {
+  findReminder(repository: Repository, reminder: Reminder): Promise<boolean>;
+  createReminder(repository: Repository, reminder: Reminder): Promise<void>;
+}
+```
+
+```js
+import fs from 'node:fs';
+import yaml from 'yaml';
+import CustomDriver from './my-custom-driver';
+import Knuff from '@acuminous/knuff';
+
+const pathToReminders = process.argv[2] || 'reminders.yaml';
+
+const config = {
+  repositories: {
+    'my-repo-id': {
+      prop1: 'wibble',
+      prop2: 'wobble',
+      driver: 'custom',
+    },
+  },
+};
+
+const drivers = { custom: new CustomDriver() };
+const knuff = new Knuff(config, drivers)
+  .on('error', console.error)
+  .on('progress', console.log);
+const reminders = yaml.parse(fs.readFileSync(pathToReminders, 'utf8'));
+
+knuff.process(reminders).then((stats) => {
+  console.log(`Successfully processed ${stats.reminders} reminders`);
+}).catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+```

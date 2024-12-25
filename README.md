@@ -107,8 +107,7 @@ const config = {
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const drivers = { github: new GitHubDriver(octokit) };
 const knuff = new Knuff(config, drivers)
-  .on('error', console.error)
-  .on('progress', console.log);
+  .on('error', console.error);
 const reminders = yaml.parse(fs.readFileSync(pathToReminders, 'utf8'));
 
 knuff.process(reminders).then((stats) => {
@@ -148,6 +147,38 @@ jobs:
 ```
 If you only ever create reminders in the same repository as the action, you can use the GITHUB_TOKEN magically provided by GitHub. If you want to create reminders in multiple repositories you can use a fine-grained personal access token with read+write issue permissions, and store it as an action secret. If you intend to use Knuff with a large number of teams and repositories you may find you are rate limited. In this case your best option is to register a GitHub App and use an installation token, however the token acquisition and refresh process is cumbersome.
 
+### Advanced Usage
+
+#### Reporting Progress
+If you have a lot of reminders you may wish to report progress after a batch of them are processed...
+```js
+const config = {
+  progress: 20, // The default is 10
+  repositories,
+};
+
+const knuff = new Knuff(config, drivers)
+  .on('error', console.error)
+  .on('progress', console.log);
+````
+
+#### Testing Reminders
+If you want extra confidence that your reminders will fire when expected you can run Knuff in `pretend` mode with a fake date...
+```js
+const { fake: clock } = require('groundhog-day');
+
+const config = {
+  pretend: true,
+  repositories,
+};
+
+clock.fix(new Date('2024-12-25'));
+
+const knuff = new Knuff(config, drivers, clock)
+  .on('error', console.error);
+```
+Because Knuff does not actually create the issues it cannot detect duplicates that would have been created in the same run.
+
 ### Custom Drivers
 Developing a custom driver is simple, you just need to write a class that implements the Driver interface specified in the type definitions, and configure it in your Knuff script, e.g.
 
@@ -171,8 +202,7 @@ const config = {
 
 const drivers = { 'my-custom-driver': new MyCustomDriver() };
 const knuff = new Knuff(config, drivers)
-  .on('error', console.error)
-  .on('progress', console.log);
+  .on('error', console.error);
 const reminders = yaml.parse(fs.readFileSync(pathToReminders, 'utf8'));
 
 knuff.process(reminders).then((stats) => {

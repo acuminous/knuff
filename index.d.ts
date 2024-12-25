@@ -20,6 +20,7 @@ interface Driver {
 }
 
 type KnuffConfig = {
+  pretend?: boolean;
   progress?: number;
   repositories: Record<string, Repository>;
 };
@@ -34,8 +35,13 @@ type KnuffStats = {
 
 type Drivers = Record<string, Driver>;
 
+type Clock = {
+  now: () => number;
+  fix?: (timestamp: number | Date) => Clock;
+};
+
 declare class Knuff extends EventEmitter {
-  constructor(config: KnuffConfig, drivers: Drivers, clock?: { now: () => number });
+  constructor(config: KnuffConfig, drivers: Drivers, clock?: Clock);
 
   /**
    * Processes a list of reminders, emitting progress and error events.

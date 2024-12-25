@@ -6,6 +6,7 @@ const slugify = require('slugify');
 const schema = require('./schema.json');
 
 const defaults = {
+  pretend: false,
   progress: 10,
   repositories: {},
 };
@@ -97,7 +98,7 @@ class Knuff extends EventEmitter {
       if (isDuplicate) {
         this.#stats.duplicates++;
       } else {
-        await driver.createReminder(repository, reminder);
+        if (!this.#config.pretend) await driver.createReminder(repository, reminder);
         this.#stats.created++;
       }
     }

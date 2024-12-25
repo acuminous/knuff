@@ -1,3 +1,6 @@
+### 3.1.0
+- Add pretend mode
+
 ### 3.0.0
 - Default id to the slugified title
 - Support multiple schedules

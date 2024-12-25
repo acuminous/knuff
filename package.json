@@ -28,7 +28,8 @@
   "dependencies": {
     "ajv": "^8.17.1",
     "groundhog-day": "^3.0.0",
-    "rrule": "^2.8.1"
+    "rrule": "^2.8.1",
+    "slugify": "^1.6.6"
   },
   "devDependencies": {
     "eslint": "^8.57.1",

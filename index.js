@@ -2,6 +2,7 @@ const EventEmitter = require('node:events');
 const { RRule } = require('rrule');
 const { real } = require('groundhog-day');
 const Ajv = require('ajv');
+const slugify = require('slugify');
 const schema = require('./schema.json');
 
 const defaults = {
@@ -29,7 +30,7 @@ class Knuff extends EventEmitter {
     this.#stats = { reminders: reminders.length, due: 0, duplicates: 0, created: 0, errors: 0 };
     for (let i = 0; i < reminders.length; i++) {
       try {
-        await this.#processReminder(reminders[i]);
+        await this.#processReminder({ ...reminders[i] });
         if ((i + 1) % this.#config.progress === 0) this.emit('progress', { ...this.#stats });
       } catch (error) {
         this.#stats.errors++;
@@ -42,6 +43,7 @@ class Knuff extends EventEmitter {
 
   async #processReminder(reminder) {
     this.#validate(reminder);
+    this.#ensureId(reminder);
     const today = this.#getToday();
     const next = this.#getNextOccurence(reminder, today);
     if (!this.#isSameDay(today, next)) return;
@@ -53,6 +55,10 @@ class Knuff extends EventEmitter {
     const error = new Error(`Reminder '${reminder.id}' is invalid. See error.details for more information`);
     Object.assign(error, { details: this.#ajvValidate.errors });
     throw error;
+  }
+
+  #ensureId(reminder) {
+    reminder.id = reminder.id || slugify(reminder.title, { lower: true });
   }
 
   #getToday() {

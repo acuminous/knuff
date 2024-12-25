@@ -43,5 +43,5 @@
       }
     },
   "additionalProperties": false,    
-  "required": ["id", "schedule", "title", "body", "repositories"]
+  "required": ["schedule", "title", "body", "repositories"]
 }

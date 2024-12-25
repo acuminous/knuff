@@ -1,4 +1,7 @@
-## 2.0.0
+### 3.0.0
+- Default id to the slugified title
+
+### 2.0.0
 - Removed the issue sub document so that title, body and labels are now top level properties
 
 ### 1.0.2

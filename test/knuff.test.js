@@ -48,18 +48,14 @@ describe('knuff', () => {
 
   describe('dsl', () => {
 
-    it('should require an id', async () => {
-      const knuff = getKnuff();
+    it('should allow an id', async () => {
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({ github: driver });
       const reminders = [
-        opi.del(bumpDependencies, 'id'),
+        opi.set(bumpDependencies, 'id', 'i-love-reminders'),
       ];
 
-      await rejects(() => knuff.process(reminders), (error) => {
-        eq(error.message, "Reminder 'undefined' is invalid. See error.details for more information");
-        eq(error.details.length, 1);
-        eq(error.details[0].message, "must have required property 'id'");
-        return true;
-      });
+      await knuff.process(reminders);
     });
 
     it('should require the id to be a string', async () => {
@@ -341,6 +337,25 @@ describe('knuff', () => {
       const fooReminders = driver.repositories('acuminous/foo').reminders;
       eq(fooReminders.length, 0);
     });
+
+    it('should default the id to the sluggified title', async () => {
+      const today = new Date(clock.now());
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({ github: driver });
+      const reminders = [
+        opi.wrap(bumpDependencies)
+          .del('id')
+          .set('title', 'I ♥ Reminders')
+          .set('schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`)
+          .value(),
+      ];
+
+      await knuff.process(reminders);
+
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
+      eq(fooReminders[0].id, 'i-love-reminders');
+    }, { exclusive: true });
 
     it('should add the specified labels', async () => {
       const today = new Date(clock.now());

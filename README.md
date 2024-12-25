@@ -37,8 +37,13 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
 ```yaml
 # Creates a reminder in acuminous/foo repository at 08:00 on the 1st of July 2025
 
+<<<<<<< HEAD
   # Optional. Must be unique. Will be generated from the title if omitted
   # Used to avoid creating duplicate reminders in the issue tracking system
+=======
+  # Optional. Must be unique. Generated from the title if omitted
+  # Used to avoid creating multiple open issues for the same reminder
+>>>>>>> 64c9738 (Improve documentation)
 - id: 'update-contentful-api-key'
 
   # Optional. Potentially useful for understanding the reminder's background 

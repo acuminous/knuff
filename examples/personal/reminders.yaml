@@ -1,5 +1,4 @@
-- id: 'test-reminder-1'
-  title: 'Test Reminder'
+- title: 'Test Reminder 1'
   body: |
     This is a test reminder
     - [ ] Do something
@@ -7,13 +6,13 @@
   labels:
     - 'Reminder'
     - 'Critical'
+  # Last Sunday of each month
   schedule: |
-    RRULE:FREQ=MINUTELY
+    RRULE:FREQ=MONTHLY;BYDAY=-1SU
   repositories: 
     - 'acuminous/foo'
 
-- id: 'test-reminder-2'
-  title: 'Test Reminder'
+- title: 'Test Reminder 2'
   body: |
     This is a test reminder
     - [ ] Do something
@@ -21,7 +20,9 @@
   labels:
     - 'Reminder'
     - 'Critical'
-  schedule: |
-    RRULE:FREQ=MINUTELY
+  # 1st and 3rd Sunday of each month
+  schedule:
+    - |
+      RRULE:FREQ=MONTHLY;BYDAY=1SU,3SU
   repositories: 
     - 'acuminous/foo'    

@@ -39,27 +39,27 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
 
   # Optional. Must be unique. Generated from the title if omitted
   # Used to avoid creating multiple open issues for the same reminder
-- id: 'update-contentful-api-key'
+- id: 'update-cms-api-key'
 
   # Optional. Potentially useful for understanding the reminder's background 
   description: |
-    The Contentful API key expires yearly. See https://github.com/acuminous/foo/blog/master/README.md#api-key for more details
+    The CMS API key expires on the 1st August 2025
 
   # Required. This will be the title of the reminder
-  title: 'Update Contenful API Key'
+  title: 'Update CMS API Key'
 
   # Required. This will be the body of the reminder
   body: |
-    The Contentful API Key expires on the 14th of July 2025.
-    - [ ] Regenerate the Contentful API Key
+    The CMS API key expires on the 1st August 2025.
+    - [ ] Regenerate the API Key
     - [ ] Update AWS Secrets Manager
     - [ ] Redeploy the website
     - [ ] Update the reminder for next year
 
   # Optional. Knuff will append the reminder id to the reminder labels and use it prevent creating duplicates
   labels:
-    - 'Reminder'
-    - 'Critical'
+    - 'reminder'
+    - 'critical'
 
   # Required. Supports a single string or list of strings
   # See https://datatracker.ietf.org/doc/html/rfc5545 and https://www.npmjs.com/package/rrule
@@ -85,31 +85,28 @@ An example script suitable for personal use is as follows...
 import fs from 'node:fs';
 import yaml from 'yaml';
 import { Octokit } from '@octokit/rest';
-import GitHubDriver from '@acuminous/knuff-github-driver';
 import Knuff from '@acuminous/knuff';
+import GitHubDriver from '@acuminous/knuff-github-driver';
 
-const pathToReminders = process.argv[2] || 'reminders.yaml';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const PATH_TO_REMINDERS = process.env.PATH_TO_REMINDERS || 'reminders.yaml';
 
 const config = {
   repositories: {
-    'acuminous/foo': {
+    'acuminous/knuff': {
       owner: 'acuminous',
-      name: 'foo',
-      driver: 'github',
-    },
-    'acuminous/bar': {
-      owner: 'acuminous',
-      name: 'bar',
+      name: 'knuff',
       driver: 'github',
     },
   },
 };
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+const octokit = new Octokit({ auth: GITHUB_TOKEN });
 const drivers = { github: new GitHubDriver(octokit) };
 const knuff = new Knuff(config, drivers)
-  .on('error', console.error);
-const reminders = yaml.parse(fs.readFileSync(pathToReminders, 'utf8'));
+  .on('error', console.error)
+  .on('progress', console.log);
+const reminders = yaml.parse(fs.readFileSync(PATH_TO_REMINDERS, 'utf8'));
 
 knuff.process(reminders).then((stats) => {
   console.log(`Successfully processed ${stats.reminders} reminders`);
@@ -128,7 +125,7 @@ name: Check Reminders
 on:
   workflow_dispatch: # Allows manual triggering of the workflow
   schedule:
-    - cron: "*/30 * * * *" # Runs every 30 minutes
+    - cron: "*/60 * * * *" # Runs every 60 minutes
 
 jobs:
   run-reminder:

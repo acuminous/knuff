@@ -2,8 +2,17 @@
   body: |
     - [ ] Regenerate the API Key
   labels:
-    - 'Reminder'
     - 'Critical'
+  schedule: |
+    RRULE:FREQ=DAILY
+  repositories:
+    - 'acuminous/knuff'
+
+- title: 'Update dependencies'
+  body: |
+    - [ ] Update dependencies
+  labels:
+    - 'chore'
   schedule: |
     RRULE:FREQ=DAILY
   repositories:

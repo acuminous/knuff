@@ -1,33 +1,29 @@
-/* eslint-disable no-console,import/no-unresolved,import/extensions */
+/* eslint-disable no-console, import/no-unresolved */
 import fs from 'node:fs';
 import yaml from 'yaml';
 import { Octokit } from '@octokit/rest';
-import GitHubDriver from 'knuff-github-driver';
-import Knuff from 'knuff/index.js';
+import Knuff from '@acuminous/knuff';
+import GitHubDriver from '@acuminous/knuff-github-driver';
 
-const pathToReminders = process.argv[2] || 'reminders.yaml';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const PATH_TO_REMINDERS = process.env.PATH_TO_REMINDERS || 'reminders.yaml';
 
 const config = {
   repositories: {
-    'acuminous/foo': {
+    'acuminous/knuff': {
       owner: 'acuminous',
-      name: 'foo',
-      driver: 'github',
-    },
-    'acuminous/bar': {
-      owner: 'acuminous',
-      name: 'bar',
+      name: 'knuff',
       driver: 'github',
     },
   },
 };
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+const octokit = new Octokit({ auth: GITHUB_TOKEN });
 const drivers = { github: new GitHubDriver(octokit) };
 const knuff = new Knuff(config, drivers)
   .on('error', console.error)
   .on('progress', console.log);
-const reminders = yaml.parse(fs.readFileSync(pathToReminders, 'utf8'));
+const reminders = yaml.parse(fs.readFileSync(PATH_TO_REMINDERS, 'utf8'));
 
 knuff.process(reminders).then((stats) => {
   console.log(`Successfully processed ${stats.reminders} reminders`);

@@ -1,7 +1,7 @@
 {
-  "name": "knuff-personal-example",
+  "name": "knuff-enterprise-example",
   "version": "1.0.0",
-  "description": "An example for personal use",
+  "description": "An example for enterprise use",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
   "dependencies": {
     "@acuminous/knuff": "../../",
     "@acuminous/knuff-github-driver": "^3.0.1",
-    "@octokit/rest": "^21.0.2",
+    "octokit": "^4.0.2",
     "yaml": "^2.6.1"
   }
 }

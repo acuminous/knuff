@@ -1,3 +1,6 @@
+### 3.1.1
+- Add enterprise example
+
 ### 3.1.0
 - Add pretend mode
 

@@ -37,7 +37,8 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
 ```yaml
 # Creates a reminder in acuminous/foo repository at 08:00 on the 1st of July 2025
 
-  # Required. Must be unique within the reminders file
+  # Optional. Must be unique. Will be generated from the title if omitted
+  # Used to avoid creating duplicate reminders in the issue tracking system
 - id: 'update-contentful-api-key'
 
   # Optional. Potentially useful for understanding the reminder's background 
@@ -60,8 +61,8 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
     - 'Reminder'
     - 'Critical'
 
-  # Required. See https://datatracker.ietf.org/doc/html/rfc5545 
-  # See also https://www.npmjs.com/package/rrule
+  # Required. Supports a single string or list of strings
+  # See https://datatracker.ietf.org/doc/html/rfc5545 and https://www.npmjs.com/package/rrule
   schedule: |
     DTSTART;TZID=Europe/London:20250701T080000
     RRULE:FREQ=DAILY;COUNT=1
@@ -122,7 +123,7 @@ knuff.process(reminders).then((stats) => {
 Knuff requires an external scheduler. Which one is to you, but we provide an example GitHub Actions setup below...
 
 ```yaml
-name: Knuff Said!
+name: Check Reminders
 
 on:
   workflow_dispatch: # Allows manual triggering of the workflow

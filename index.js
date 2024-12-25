@@ -45,8 +45,8 @@ class Knuff extends EventEmitter {
     this.#validate(reminder);
     this.#ensureId(reminder);
     const today = this.#getToday();
-    const next = this.#getNextOccurence(reminder, today);
-    if (!this.#isSameDay(today, next)) return;
+    const occurrences = this.#getNextOccurrences(reminder, today);
+    if (!this.#occursToday(today, occurrences)) return;
     await this.#ensureIssue(reminder);
   }
 
@@ -65,21 +65,25 @@ class Knuff extends EventEmitter {
     return new Date(new Date(this.#clock.now()).setHours(0, 0, 0, 0));
   }
 
-  #getNextOccurence(reminder, today) {
-    try {
-      const rule = RRule.fromString(reminder.schedule);
-      return rule.after(today, true);
-    } catch (cause) {
-      throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${reminder.schedule}'`, { cause });
-    }
+  #getNextOccurrences(reminder, today) {
+    return [].concat(reminder.schedule).map((schedule) => {
+      try {
+        const rule = RRule.fromString(schedule);
+        return rule.after(today, true);
+      } catch (cause) {
+        throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${schedule}'`, { cause });
+      }
+    });
   }
 
-  #isSameDay(date1, date2) {
-    return (
-      date1?.getFullYear() === date2?.getFullYear()
-      && date1?.getMonth() === date2?.getMonth()
-      && date1?.getDate() === date2?.getDate()
-    );
+  #occursToday(today, candidates) {
+    return candidates.find((candidate) => {
+      return (
+        today?.getFullYear() === candidate?.getFullYear()
+        && today?.getMonth() === candidate?.getMonth()
+        && today?.getDate() === candidate?.getDate()
+      );
+    });
   }
 
   async #ensureIssue(reminder) {

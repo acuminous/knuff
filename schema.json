@@ -29,8 +29,20 @@
       "default": []
     },
     "schedule": {
-      "type": "string",
-      "description": "The RRULE schedule for the reminder"
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "A single RRULE schedule for the reminder"
+        },
+        {
+          "type": "array",
+          "description": "Multiple RRULE schedules for the reminder",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      ]
     },
     "repositories": {
       "type": "array",

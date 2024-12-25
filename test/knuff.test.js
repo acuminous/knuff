@@ -109,7 +109,7 @@ describe('knuff', () => {
       });
     });
 
-    it('should require the schedule to be a string', async () => {
+    it('should allow the schedule to be a string', async () => {
       const knuff = getKnuff();
       const reminders = [
         opi.set(bumpDependencies, 'schedule', 1),
@@ -117,8 +117,57 @@ describe('knuff', () => {
 
       await rejects(() => knuff.process(reminders), (error) => {
         eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
-        eq(error.details.length, 1);
+        eq(error.details.length, 3);
         eq(error.details[0].message, 'must be string');
+        eq(error.details[1].message, 'must be array');
+        eq(error.details[2].message, 'must match exactly one schema in oneOf');
+        return true;
+      });
+    });
+
+    it('should allow the schedule to be an array', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', [
+          'DTSTART;TZID=Europe/London:20241219T080000;\nRRULE:FREQ=DAILY;COUNT=1',
+          'DTSTART;TZID=Europe/London:20250319T080000;\nRRULE:FREQ=DAILY;COUNT=1',
+        ]),
+      ];
+
+      await knuff.process(reminders);
+    });
+
+    it('should require the schedule items to be strings', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', [1]),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 3);
+        eq(error.details[0].message, 'must be string');
+        eq(error.details[1].message, 'must be string');
+        eq(error.details[2].message, 'must match exactly one schema in oneOf');
+        return true;
+      });
+    });
+
+    it('should require the schedule items to be unique', async () => {
+      const knuff = getKnuff();
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', [
+          'DTSTART;TZID=Europe/London:20241219T080000;\nRRULE:FREQ=DAILY;COUNT=1',
+          'DTSTART;TZID=Europe/London:20241219T080000;\nRRULE:FREQ=DAILY;COUNT=1',
+        ]),
+      ];
+
+      await rejects(() => knuff.process(reminders), (error) => {
+        eq(error.message, "Reminder 'bump-dependencies' is invalid. See error.details for more information");
+        eq(error.details.length, 3);
+        eq(error.details[0].message, 'must be string');
+        eq(error.details[1].message, 'must NOT have duplicate items (items ## 1 and 0 are identical)');
+        eq(error.details[2].message, 'must match exactly one schema in oneOf');
         return true;
       });
     });
@@ -289,7 +338,7 @@ describe('knuff', () => {
 
   describe('reminder creation', () => {
 
-    it('should create reminders when the next occurence is today', async () => {
+    it('should create a reminder when the next occurrence is today', async () => {
       const today = new Date(clock.now());
       const driver = new StubDriver('github');
       const knuff = getKnuff({ github: driver });
@@ -308,7 +357,67 @@ describe('knuff', () => {
       eq(fooReminders[1].body, 'Run npm audit --fix');
     });
 
-    it('should not create reminders when the next occurence is after today', async () => {
+    it('should create a reminder when there are multiple schedules all with the next occurrences being today', async () => {
+      const today1 = new Date(clock.now());
+      const today2 = new Date(today1.getTime() + 1000);
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({ github: driver });
+
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', [
+          `DTSTART;TZID=Europe/London:${dtstart(today1)};\nRRULE:FREQ=DAILY;COUNT=1`,
+          `DTSTART;TZID=Europe/London:${dtstart(today2)};\nRRULE:FREQ=DAILY;COUNT=1`,
+        ]),
+      ];
+      await knuff.process(reminders);
+
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
+      eq(fooReminders[0].title, 'Bump Dependencies');
+      eq(fooReminders[0].body, 'Bump dependencies for all projects');
+    });
+
+    it('should create a reminder when there are two schedules but only the first schedules next occurrence is today', async () => {
+      const today = new Date(clock.now());
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({ github: driver });
+
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', [
+          `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
+          `DTSTART;TZID=Europe/London:${dtstart(tomorrow)};\nRRULE:FREQ=DAILY;COUNT=1`,
+        ]),
+      ];
+      await knuff.process(reminders);
+
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
+      eq(fooReminders[0].title, 'Bump Dependencies');
+      eq(fooReminders[0].body, 'Bump dependencies for all projects');
+    });
+
+    it('should create a reminder when there are two schedules but only the second schedules next occurrence is today', async () => {
+      const today = new Date(clock.now());
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({ github: driver });
+
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', [
+          `DTSTART;TZID=Europe/London:${dtstart(tomorrow)};\nRRULE:FREQ=DAILY;COUNT=1`,
+          `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`,
+        ]),
+      ];
+      await knuff.process(reminders);
+
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
+      eq(fooReminders[0].title, 'Bump Dependencies');
+      eq(fooReminders[0].body, 'Bump dependencies for all projects');
+    });
+
+    it('should not create reminders when the next occurrence is after today', async () => {
       const today = new Date(clock.now());
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
@@ -355,7 +464,7 @@ describe('knuff', () => {
       const fooReminders = driver.repositories('acuminous/foo').reminders;
       eq(fooReminders.length, 1);
       eq(fooReminders[0].id, 'i-love-reminders');
-    }, { exclusive: true });
+    });
 
     it('should add the specified labels', async () => {
       const today = new Date(clock.now());

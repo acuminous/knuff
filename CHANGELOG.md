@@ -1,5 +1,6 @@
 ### 3.0.0
 - Default id to the slugified title
+- Support multiple schedules
 
 ### 2.0.0
 - Removed the issue sub document so that title, body and labels are now top level properties

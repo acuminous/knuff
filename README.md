@@ -63,6 +63,7 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
 
   # Required. Supports a single string or list of strings
   # See https://datatracker.ietf.org/doc/html/rfc5545 and https://www.npmjs.com/package/rrule
+  # Use ChatGPT to generate :)
   schedule: |
     DTSTART;TZID=Europe/London:20250701T080000
     RRULE:FREQ=DAILY;COUNT=1

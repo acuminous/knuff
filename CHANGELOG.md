@@ -3,6 +3,7 @@
 - Add reminder date
 - Support timezones
 - Change slugify algorithm to unique-slug
+- Stub now using Luxon instead of groundhog-day
 
 ### 3.1.1
 - Add enterprise example

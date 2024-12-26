@@ -1,6 +1,5 @@
 const EventEmitter = require('node:events');
 const { RRule } = require('rrule');
-const { real } = require('groundhog-day');
 const { DateTime } = require('luxon');
 const Ajv = require('ajv');
 const slugify = require('unique-slug');
@@ -16,15 +15,13 @@ class Knuff extends EventEmitter {
 
   #config;
   #drivers;
-  #clock;
   #ajvValidate;
   #stats;
 
-  constructor(config, drivers, clock = real) {
+  constructor(config, drivers) {
     super();
     this.#config = { ...defaults, ...config };
     this.#drivers = drivers;
-    this.#clock = clock;
     this.#ajvValidate = new Ajv({ allErrors: true }).compile(schema);
   }
 
@@ -68,7 +65,7 @@ class Knuff extends EventEmitter {
   }
 
   #getReminderDate(reminder) {
-    const before = new Date(this.#clock.now());
+    const before = new Date(DateTime.now());
     return [].concat(reminder.schedule)
       .reduce(toOccurrences(reminder, before), [])
       .sort(inAscendingOrder)[0];

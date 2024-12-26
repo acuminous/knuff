@@ -1,3 +1,5 @@
+const { DateTime } = require('luxon');
+
 class StubDriver {
 
   #name;
@@ -36,7 +38,7 @@ class StubDriver {
   }
 
   #getKnuffDateLabel(reminder) {
-    return `knuff:${reminder.date.toISOString().split('T')[0]}`;
+    return `knuff:${DateTime.fromJSDate(reminder.date).setZone(reminder.timezone).toFormat('yyyy-MM-dd')}`;
   }
 
   #initRepository() {

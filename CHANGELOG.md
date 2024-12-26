@@ -1,6 +1,7 @@
 ### 4.0.0
 - Rename driver.findReminder to driver.hasReminder
 - Add reminder date
+- Support timezones
 
 ### 3.1.1
 - Add enterprise example

@@ -13,6 +13,7 @@ type Reminder = {
   schedule: string | string[];
   repositories: string[];
   date: Date;
+  timezone: string;
 };
 
 interface Driver {

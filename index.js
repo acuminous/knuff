@@ -1,6 +1,7 @@
 const EventEmitter = require('node:events');
 const { RRule } = require('rrule');
 const { real } = require('groundhog-day');
+const { DateTime } = require('luxon');
 const Ajv = require('ajv');
 const slugify = require('slugify');
 const schema = require('./schema.json');
@@ -62,29 +63,15 @@ class Knuff extends EventEmitter {
   }
 
   #setDate(reminder) {
-    const today = this.#clock.now();
-    reminder.date = this.#getFirstOccurrence(reminder, today);
+    const entry = this.#getReminderDate(reminder);
+    Object.assign(reminder, entry);
   }
 
-  #getFirstOccurrence(reminder, now) {
-    const startOfDay = this.#getStartOfDay(now);
-    const endOfDay = this.#getEndOfDay(now);
-    return [].concat(reminder.schedule).reduce((occurrences, schedule) => {
-      try {
-        const rule = RRule.fromString(schedule);
-        return occurrences.concat(rule.between(startOfDay, endOfDay, true));
-      } catch (cause) {
-        throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${schedule}'`, { cause });
-      }
-    }, []).sort((a, b) => a - b)[0];
-  }
-
-  #getStartOfDay(timestamp) {
-    return new Date(new Date(timestamp).setHours(0, 0, 0, 0));
-  }
-
-  #getEndOfDay(timestamp) {
-    return new Date(new Date(timestamp).setHours(23, 59, 59, 999));
+  #getReminderDate(reminder) {
+    const before = new Date(this.#clock.now());
+    return [].concat(reminder.schedule)
+      .reduce(toOccurrences(reminder, before), [])
+      .sort(inAscendingOrder)[0];
   }
 
   async #ensureReminder(reminder) {
@@ -107,6 +94,28 @@ class Knuff extends EventEmitter {
     if (!repository) throw new Error(`Reminder '${reminder.id}' has an unknown repository '${repositoryId}'`);
     return repository;
   }
+}
+
+function toOccurrences(reminder, before) {
+  return (occurrences, schedule) => {
+    try {
+      const rule = RRule.fromString(schedule);
+      const timezone = rule.options.tzid;
+      const after = getStartOfDay(before, timezone);
+      const dates = rule.between(after, before, true).map((date) => ({ date, timezone }));
+      return occurrences.concat(dates);
+    } catch (cause) {
+      throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${schedule}'`, { cause });
+    }
+  };
+}
+
+function getStartOfDay(date, tzid) {
+  return DateTime.fromJSDate(date).setZone(tzid).startOf('day').toJSDate();
+}
+
+function inAscendingOrder(a, b) {
+  return a.date - b.date;
 }
 
 module.exports = Knuff;

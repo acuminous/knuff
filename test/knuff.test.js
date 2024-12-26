@@ -46,6 +46,8 @@ describe('knuff', () => {
     ],
   };
 
+  clock.fix('2024-01-01T11:00:00.000Z');
+
   describe('dsl', () => {
 
     it('should allow an id', async () => {
@@ -353,8 +355,12 @@ describe('knuff', () => {
       eq(fooReminders.length, 2);
       eq(fooReminders[0].title, 'Bump Dependencies');
       eq(fooReminders[0].body, 'Bump dependencies for all projects');
+      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(fooReminders[0].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
       eq(fooReminders[1].title, 'Audit Dependencies');
       eq(fooReminders[1].body, 'Run npm audit --fix');
+      eq(fooReminders[1].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(fooReminders[1].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
     });
 
     it('should create a reminder when there are multiple schedules all with the next occurrences being today', async () => {
@@ -375,6 +381,8 @@ describe('knuff', () => {
       eq(fooReminders.length, 1);
       eq(fooReminders[0].title, 'Bump Dependencies');
       eq(fooReminders[0].body, 'Bump dependencies for all projects');
+      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(fooReminders[0].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
     });
 
     it('should create a reminder when there are two schedules but only the first schedules next occurrence is today', async () => {
@@ -395,6 +403,8 @@ describe('knuff', () => {
       eq(fooReminders.length, 1);
       eq(fooReminders[0].title, 'Bump Dependencies');
       eq(fooReminders[0].body, 'Bump dependencies for all projects');
+      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(fooReminders[0].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
     });
 
     it('should create a reminder when there are two schedules but only the second schedules next occurrence is today', async () => {
@@ -415,6 +425,8 @@ describe('knuff', () => {
       eq(fooReminders.length, 1);
       eq(fooReminders[0].title, 'Bump Dependencies');
       eq(fooReminders[0].body, 'Bump dependencies for all projects');
+      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(fooReminders[0].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
     });
 
     it('should not create reminders when the next occurrence is after today', async () => {
@@ -485,7 +497,7 @@ describe('knuff', () => {
       eq(fooReminders[0].labels[0], 'chore');
       eq(fooReminders[0].labels[1], 'reminder');
       eq(fooReminders[0].labels[2], 'knuff:bump-dependencies');
-      eq(fooReminders[0].labels[3], 'knuff:2016-02-02');
+      eq(fooReminders[0].labels[3], 'knuff:2024-01-01');
     });
 
     it('should create reminders in all specified repositories', async () => {
@@ -545,6 +557,77 @@ describe('knuff', () => {
       eq(fooReminders.length, 1);
       eq(fooReminders[0].title, 'Bump Dependencies');
       eq(fooReminders[0].body, 'Bump dependencies for all projects');
+    });
+
+    it('should respect the reminder time zone (end of day before reminder)', async () => {
+      /* eslint-disable-next-line camelcase */
+      const end_of_dec_31st_2023_Sydney = new Date('2023-12-31T12:59:00.000Z');
+      clock.fix(end_of_dec_31st_2023_Sydney);
+
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({}, { github: driver });
+
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', 'DTSTART;TZID=Australia/Sydney:20240101T000000;\nRRULE:FREQ=DAILY;COUNT=1'),
+      ];
+      await knuff.process(reminders);
+
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 0);
+    });
+
+    it('should respect the reminder time zone (start of reminder day)', async () => {
+      /* eslint-disable-next-line camelcase */
+      const start_of_jan_1st_2024_Sydney = new Date('2023-12-31T13:00:00.000Z');
+      clock.fix(start_of_jan_1st_2024_Sydney);
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({}, { github: driver });
+
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', 'DTSTART;TZID=Australia/Sydney:20240101T000000;\nRRULE:FREQ=DAILY;COUNT=1'),
+      ];
+      await knuff.process(reminders);
+
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
+      eq(fooReminders[0].date.toISOString(), '2023-12-31T13:00:00.000Z');
+      eq(fooReminders[0].timezone, 'Australia/Sydney');
+      eq(fooReminders[0].labels[1], 'knuff:2024-01-01');
+    });
+
+    it('should respect the reminder time zone (end of reminder day)', async () => {
+      /* eslint-disable-next-line camelcase */
+      const end_of_jan_1st_2024_Sydney = new Date('2024-01-01T12:59:00.000Z');
+      clock.fix(end_of_jan_1st_2024_Sydney);
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({}, { github: driver });
+
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', 'DTSTART;TZID=Australia/Sydney:20240101T000000;\nRRULE:FREQ=DAILY;COUNT=1'),
+      ];
+      await knuff.process(reminders);
+
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 1);
+      eq(fooReminders[0].date.toISOString(), '2023-12-31T13:00:00.000Z');
+      eq(fooReminders[0].timezone, 'Australia/Sydney');
+      eq(fooReminders[0].labels[1], 'knuff:2024-01-01');
+    });
+
+    it('should respect the reminder time zone (start of day after reminder)', async () => {
+      /* eslint-disable-next-line camelcase */
+      const start_of_jan_2nd_2024_Sydney = new Date('2024-01-01T13:00:00.000Z');
+      clock.fix(start_of_jan_2nd_2024_Sydney);
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({}, { github: driver });
+
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', 'DTSTART;TZID=Australia/Sydney:20240101T000000;\nRRULE:FREQ=DAILY;COUNT=1'),
+      ];
+      await knuff.process(reminders);
+
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 0);
     });
   });
 

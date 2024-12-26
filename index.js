@@ -100,7 +100,7 @@ function toOccurrences(reminder, before) {
   return (occurrences, schedule) => {
     try {
       const rule = RRule.fromString(schedule);
-      const timezone = rule.options.tzid;
+      const timezone = rule.options.tzid || 'UTC';
       const after = getStartOfDay(before, timezone);
       const dates = rule.between(after, before, true).map((date) => ({ date, timezone }));
       return occurrences.concat(dates);

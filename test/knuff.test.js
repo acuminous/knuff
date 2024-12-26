@@ -356,11 +356,34 @@ describe('knuff', () => {
       eq(fooReminders[0].title, 'Bump Dependencies');
       eq(fooReminders[0].body, 'Bump dependencies for all projects');
       eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[0].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
+      eq(fooReminders[0].timezone, 'Europe/London');
       eq(fooReminders[1].title, 'Audit Dependencies');
       eq(fooReminders[1].body, 'Run npm audit --fix');
       eq(fooReminders[1].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[1].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
+      eq(fooReminders[1].timezone, 'Europe/London');
+    });
+
+    it('should create a reminder when the next occurrence is today in UTC', async () => {
+      const today = new Date(clock.now());
+      const driver = new StubDriver('github');
+      const knuff = getKnuff({}, { github: driver });
+
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', `DTSTART:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
+        opi.set(auditDependencies, 'schedule', `DTSTART:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
+      ];
+      await knuff.process(reminders);
+
+      const fooReminders = driver.repositories('acuminous/foo').reminders;
+      eq(fooReminders.length, 2);
+      eq(fooReminders[0].title, 'Bump Dependencies');
+      eq(fooReminders[0].body, 'Bump dependencies for all projects');
+      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(fooReminders[0].timezone, 'UTC');
+      eq(fooReminders[1].title, 'Audit Dependencies');
+      eq(fooReminders[1].body, 'Run npm audit --fix');
+      eq(fooReminders[1].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(fooReminders[1].timezone, 'UTC');
     });
 
     it('should create a reminder when there are multiple schedules all with the next occurrences being today', async () => {
@@ -382,7 +405,7 @@ describe('knuff', () => {
       eq(fooReminders[0].title, 'Bump Dependencies');
       eq(fooReminders[0].body, 'Bump dependencies for all projects');
       eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[0].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
+      eq(fooReminders[0].timezone, 'Europe/London');
     });
 
     it('should create a reminder when there are two schedules but only the first schedules next occurrence is today', async () => {
@@ -404,7 +427,7 @@ describe('knuff', () => {
       eq(fooReminders[0].title, 'Bump Dependencies');
       eq(fooReminders[0].body, 'Bump dependencies for all projects');
       eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[0].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
+      eq(fooReminders[0].timezone, 'Europe/London');
     });
 
     it('should create a reminder when there are two schedules but only the second schedules next occurrence is today', async () => {
@@ -426,7 +449,7 @@ describe('knuff', () => {
       eq(fooReminders[0].title, 'Bump Dependencies');
       eq(fooReminders[0].body, 'Bump dependencies for all projects');
       eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[0].timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
+      eq(fooReminders[0].timezone, 'Europe/London');
     });
 
     it('should not create reminders when the next occurrence is after today', async () => {

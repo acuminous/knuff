@@ -1,10 +1,12 @@
 - title: 'Regenerate API Key'
   body: |
     - [ ] Regenerate the API Key
+    - [ ] Reset knuff reminder
   labels:
-    - 'Critical'
+    - 'reminder'
   schedule: |
-    RRULE:FREQ=DAILY
+    DTSTART;TZID=Europe/London:20250701T080000
+    RRULE:FREQ=DAILY;COUNT=1
   repositories:
     - 'acuminous/knuff'
 
@@ -14,6 +16,6 @@
   labels:
     - 'chore'
   schedule: |
-    RRULE:FREQ=DAILY
+    RRULE:FREQ=MONTHLY;BYMONTHDAY=1
   repositories:
     - 'acuminous/knuff'

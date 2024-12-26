@@ -51,15 +51,13 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
   # Required. This will be the body of the reminder
   body: |
     The CMS API key expires on the 1st August 2025.
+
     - [ ] Regenerate the API Key
-    - [ ] Update AWS Secrets Manager
-    - [ ] Redeploy the website
-    - [ ] Update the reminder for next year
+    - [ ] Reset knuff reminder
 
   # Optional. Knuff will append the reminder id to the reminder labels and use it prevent creating duplicates
   labels:
     - 'reminder'
-    - 'critical'
 
   # Required. Supports a single string or list of strings
   # See https://datatracker.ietf.org/doc/html/rfc5545 and https://www.npmjs.com/package/rrule
@@ -70,7 +68,7 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
 
   # Required. The list of repositories to post the reminder to
   repositories: 
-    - 'acuminous/foo'
+    - 'acuminous/knuff'
 ```
 
 ### Generating Reminders
@@ -103,9 +101,7 @@ const config = {
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 const drivers = { github: new GitHubDriver(octokit) };
-const knuff = new Knuff(config, drivers)
-  .on('error', console.error)
-  .on('progress', console.log);
+const knuff = new Knuff(config, drivers).on('error', console.error)
 const reminders = yaml.parse(fs.readFileSync(PATH_TO_REMINDERS, 'utf8'));
 
 knuff.process(reminders).then((stats) => {

@@ -45,10 +45,9 @@ class Knuff extends EventEmitter {
   async #processReminder(reminder) {
     this.#validate(reminder);
     this.#ensureId(reminder);
-    const today = this.#getToday();
-    const occurrences = this.#getNextOccurrences(reminder, today);
-    if (!this.#occursToday(today, occurrences)) return;
-    await this.#ensureIssue(reminder);
+    this.#setDate(reminder);
+    if (!reminder.date) return;
+    await this.#ensureReminder(reminder);
   }
 
   #validate(reminder) {
@@ -62,39 +61,38 @@ class Knuff extends EventEmitter {
     reminder.id = reminder.id || slugify(reminder.title, { lower: true });
   }
 
-  #getToday() {
-    return new Date(new Date(this.#clock.now()).setHours(0, 0, 0, 0));
+  #setDate(reminder) {
+    const today = this.#clock.now();
+    reminder.date = this.#getFirstOccurrence(reminder, today);
   }
 
-  #getNextOccurrences(reminder, today) {
-    return [].concat(reminder.schedule).map((schedule) => {
+  #getFirstOccurrence(reminder, now) {
+    const startOfDay = this.#getStartOfDay(now);
+    const endOfDay = this.#getEndOfDay(now);
+    return [].concat(reminder.schedule).reduce((occurrences, schedule) => {
       try {
         const rule = RRule.fromString(schedule);
-        return rule.after(today, true);
+        return occurrences.concat(rule.between(startOfDay, endOfDay, true));
       } catch (cause) {
         throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${schedule}'`, { cause });
       }
-    });
+    }, []).sort((a, b) => a - b)[0];
   }
 
-  #occursToday(today, candidates) {
-    return candidates.find((candidate) => {
-      return (
-        today?.getFullYear() === candidate?.getFullYear()
-        && today?.getMonth() === candidate?.getMonth()
-        && today?.getDate() === candidate?.getDate()
-      );
-    });
+  #getStartOfDay(timestamp) {
+    return new Date(new Date(timestamp).setHours(0, 0, 0, 0));
   }
 
-  async #ensureIssue(reminder) {
+  #getEndOfDay(timestamp) {
+    return new Date(new Date(timestamp).setHours(23, 59, 59, 999));
+  }
+
+  async #ensureReminder(reminder) {
     this.#stats.due++;
-    for (let j = 0; j < reminder.repositories.length; j++) {
-      const repositoryId = reminder.repositories[j];
-      const repository = this.#config.repositories[repositoryId];
-      if (!repository) throw new Error(`Reminder '${reminder.id}' has an unknown repository '${repositoryId}'`);
+    for (let i = 0; i < reminder.repositories.length; i++) {
+      const repository = this.#getRepository(reminder, reminder.repositories[i]);
       const driver = this.#drivers[repository.driver];
-      const isDuplicate = await driver.findReminder(repository, reminder);
+      const isDuplicate = await driver.hasReminder(repository, reminder);
       if (isDuplicate) {
         this.#stats.duplicates++;
       } else {
@@ -102,6 +100,12 @@ class Knuff extends EventEmitter {
         this.#stats.created++;
       }
     }
+  }
+
+  #getRepository(reminder, repositoryId) {
+    const repository = this.#config.repositories[repositoryId];
+    if (!repository) throw new Error(`Reminder '${reminder.id}' has an unknown repository '${repositoryId}'`);
+    return repository;
   }
 }
 

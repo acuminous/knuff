@@ -1,3 +1,7 @@
+### 4.0.0
+- Rename driver.findReminder to driver.hasReminder
+- Add reminder date
+
 ### 3.1.1
 - Add enterprise example
 

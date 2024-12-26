@@ -481,10 +481,11 @@ describe('knuff', () => {
 
       const fooReminders = driver.repositories('acuminous/foo').reminders;
       eq(fooReminders.length, 1);
-      eq(fooReminders[0].labels.length, 3);
+      eq(fooReminders[0].labels.length, 4);
       eq(fooReminders[0].labels[0], 'chore');
       eq(fooReminders[0].labels[1], 'reminder');
-      eq(fooReminders[0].labels[2], 'bump-dependencies');
+      eq(fooReminders[0].labels[2], 'knuff:bump-dependencies');
+      eq(fooReminders[0].labels[3], 'knuff:2016-02-02');
     });
 
     it('should create reminders in all specified repositories', async () => {

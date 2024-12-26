@@ -11,21 +11,32 @@ class StubDriver {
     return this.#repositories[id] || this.#initRepository();
   }
 
-  async findReminder(repository, reminder) {
+  async hasReminder(repository, reminder) {
     const key = this.#getRepositoryKey(repository.owner, repository.name);
     const { reminders } = this.#repositories[key] || this.#initRepository();
-    return reminders.find((candidate) => candidate.labels.find((label) => label === reminder.id));
+    return reminders.find((candidate) => {
+      return candidate.labels.find((label) => label === this.#getKnuffIdLabel(reminder))
+        && candidate.labels.find((label) => label === this.#getKnuffDateLabel(reminder));
+    });
   }
 
   async createReminder(repository, reminder) {
     const key = this.#getRepositoryKey(repository.owner, repository.name);
     this.#repositories[key] = this.#repositories[key] || this.#initRepository();
-    const labels = [].concat(reminder.labels || [], reminder.id);
+    const labels = [].concat(reminder.labels || [], this.#getKnuffIdLabel(reminder), this.#getKnuffDateLabel(reminder));
     this.#repositories[key].reminders.push({ ...reminder, labels });
   }
 
   #getRepositoryKey(owner, name) {
     return `${owner}/${name}`;
+  }
+
+  #getKnuffIdLabel(reminder) {
+    return `knuff:${reminder.id}`;
+  }
+
+  #getKnuffDateLabel(reminder) {
+    return `knuff:${reminder.date.toISOString().split('T')[0]}`;
   }
 
   #initRepository() {

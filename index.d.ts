@@ -12,11 +12,12 @@ type Reminder = {
   body: string;
   schedule: string | string[];
   repositories: string[];
+  date: Date;
 };
 
 interface Driver {
-  findReminder(repository: Repository, reminder: Reminder): Promise<boolean>;
-  createReminder(repository: Repository, reminder: Reminder): Promise<void>;
+  hasReminder(repository: Repository, reminder: Reminder): Promise<boolean>;
+  createReminder(repository: Repository, reminder: Reminder): Promise<any>;
 }
 
 type KnuffConfig = {

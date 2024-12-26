@@ -3,7 +3,7 @@ const { RRule } = require('rrule');
 const { real } = require('groundhog-day');
 const { DateTime } = require('luxon');
 const Ajv = require('ajv');
-const slugify = require('slugify');
+const slugify = require('unique-slug');
 const schema = require('./schema.json');
 
 const defaults = {

@@ -2,6 +2,7 @@
 - Rename driver.findReminder to driver.hasReminder
 - Add reminder date
 - Support timezones
+- Change slugify algorithm to unique-slug
 
 ### 3.1.1
 - Add enterprise example

@@ -498,7 +498,7 @@ describe('knuff', () => {
 
       const fooReminders = driver.repositories('acuminous/foo').reminders;
       eq(fooReminders.length, 1);
-      eq(fooReminders[0].id, 'i-love-reminders');
+      eq(fooReminders[0].id, '6a81e4c3');
     });
 
     it('should add the specified labels', async () => {

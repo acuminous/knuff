@@ -1,3 +1,9 @@
+### 4.0.1
+- Fix pretend dates
+- Do not check for duplicates when pretending
+- Add debug
+- Improved documentation
+
 ### 4.0.0
 - Rename driver.findReminder to driver.hasReminder
 - Add reminder date

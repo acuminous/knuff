@@ -1,9 +1,13 @@
+const debug = require('debug')('knuff');
 const EventEmitter = require('node:events');
+const { AsyncLocalStorage } = require('node:async_hooks');
 const { RRule } = require('rrule');
 const { DateTime, Settings } = require('luxon');
 const Ajv = require('ajv');
 const slugify = require('unique-slug');
 const schema = require('./schema.json');
+
+const als = new AsyncLocalStorage();
 
 const defaults = {
   pretend: false,
@@ -30,7 +34,9 @@ class Knuff extends EventEmitter {
     this.#stats = { reminders: reminders.length, due: 0, duplicates: 0, created: 0, errors: 0 };
     for (let i = 0; i < reminders.length; i++) {
       try {
-        await this.#processReminder({ ...reminders[i] });
+        await als.run({}, async () => {
+          await this.#processReminder({ ...reminders[i] });
+        });
         if ((i + 1) % this.#config.progress === 0) this.emit('progress', { ...this.#stats });
       } catch (error) {
         this.#stats.errors++;
@@ -44,6 +50,7 @@ class Knuff extends EventEmitter {
   async #processReminder(reminder) {
     this.#validate(reminder);
     this.#ensureId(reminder);
+    als.getStore().debug("Processing reminder with title='%s'", reminder.title);
     this.#setDate(reminder);
     if (!reminder.date) return;
     await this.#ensureReminder(reminder);
@@ -58,14 +65,18 @@ class Knuff extends EventEmitter {
 
   #ensureId(reminder) {
     reminder.id = reminder.id || slugify(reminder.title, { lower: true });
+    als.getStore().debug = debug.extend(reminder.id);
   }
 
   #setDate(reminder) {
-    const entry = this.#getReminderDate(reminder);
-    Object.assign(reminder, entry);
+    const occurrence = this.#getOccurrence(reminder);
+    if (occurrence) {
+      als.getStore().debug("Assigning reminder date '%s' and timezone '%s'", occurrence.date.toISOString(), occurrence.timezone);
+      Object.assign(reminder, occurrence);
+    }
   }
 
-  #getReminderDate(reminder) {
+  #getOccurrence(reminder) {
     const before = new Date(DateTime.now());
     return [].concat(reminder.schedule)
       .reduce(toOccurrences(reminder, before), [])
@@ -77,10 +88,12 @@ class Knuff extends EventEmitter {
     for (let i = 0; i < reminder.repositories.length; i++) {
       const repository = this.#getRepository(reminder, reminder.repositories[i]);
       const driver = this.#drivers[repository.driver];
-      const isDuplicate = await driver.hasReminder(repository, reminder);
+      const isDuplicate = !this.#config.pretend && await driver.hasReminder(repository, reminder);
       if (isDuplicate) {
+        als.getStore().debug("Found duplicate in repository '%s'", reminder.id, reminder.title, reminder.repositories[i]);
         this.#stats.duplicates++;
       } else {
+        als.getStore().debug("Creating reminder in repository '%s'", reminder.repositories[i]);
         if (!this.#config.pretend) await driver.createReminder(repository, reminder);
         this.#stats.created++;
       }
@@ -97,10 +110,13 @@ class Knuff extends EventEmitter {
 function toOccurrences(reminder, before) {
   return (occurrences, schedule) => {
     const rule = parseRule(reminder, schedule);
+    als.getStore().debug("Schedule is '%s'", schedule.replace(/\n/g, '\\n'));
     const timezone = rule.options.tzid || 'UTC';
     const after = getStartOfDay(before, timezone);
-    const dates = rule.between(after, before, true).map((date) => ({ date, timezone }));
-    return occurrences.concat(dates);
+    als.getStore().debug('Getting occurrences between %s and %s inclusive', DateTime.fromJSDate(after).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS), DateTime.fromJSDate(before).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS));
+    const dates = rule.between(after, before, true);
+    als.getStore().debug('Found %d occurrences: [%s]', dates.length, dates.map((date) => date.toISOString()).join(', '));
+    return occurrences.concat(dates.map((date) => ({ date, timezone })));
   };
 }
 

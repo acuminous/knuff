@@ -86,8 +86,8 @@ import { Octokit } from '@octokit/rest';
 import Knuff from '@acuminous/knuff';
 import GitHubDriver from '@acuminous/knuff-github-driver';
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const PATH_TO_REMINDERS = process.env.PATH_TO_REMINDERS || 'reminders.yaml';
+const auth = process.env.GITHUB_TOKEN;
+const pathToReminders = process.env.REMINDERS || 'reminders.yaml';
 
 const config = {
   repositories: {
@@ -99,10 +99,10 @@ const config = {
   },
 };
 
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+const octokit = new Octokit({ auth });
 const drivers = { github: new GitHubDriver(octokit) };
 const knuff = new Knuff(config, drivers).on('error', console.error)
-const reminders = yaml.parse(fs.readFileSync(PATH_TO_REMINDERS, 'utf8'));
+const reminders = yaml.parse(fs.readFileSync(pathToReminders, 'utf8'));
 
 knuff.process(reminders).then((stats) => {
   console.log(`Successfully processed ${stats.reminders} reminders`);
@@ -135,7 +135,7 @@ jobs:
         run: npm ci
 
       - name: Execute Knuff
-        run: node knuff.js
+        run: node your-knuff-script.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -151,55 +151,51 @@ const config = {
   repositories,
 };
 
+// ...
+
 const knuff = new Knuff(config, drivers)
   .on('error', console.error)
   .on('progress', console.log);
 ````
 
-#### Testing Reminders
-If you want extra confidence that your reminders will fire when expected you can run Knuff in `pretend` mode with a fake date...
+#### Pretend Mode
+If you want extra confidence that your reminders will fire when expected you can run Knuff in `pretend` mode with a fake date and debug enabled. When running in `pretend` mode knuff will not check for duplicates or create reminders. Pretend mode will only work for events on or beyond the rule's DTSTART, which defaults to new Date().
+
 ```js
 const config = {
   pretend: true,
   repositories,
 };
 
-const now = () => new Date('2024-12-25');
+const now = process.env.PRETEND_NOW
+ ? () => new Date(process.env.PRETEND_NOW).getTime()
+ : undefined
 
-const knuff = new Knuff(config, drivers, now).on('error', console.error);
+// ...
+
+const knuff = new Knuff(config, drivers, now)
+  .on('error', console.error);
 ```
-Because Knuff does not actually create the issues it cannot detect duplicates that would have been created in the same run.
+
+```
+DEBUG=knuff:* node index.js --pretend --now='2025-07-01T23:59:59'
+
+knuff:18b7cd5a Processing reminder with title='Regenerate API Key' +0ms
+knuff:18b7cd5a Schedule is 'DTSTART;TZID=Europe/London:20250701T080000\nRRULE:FREQ=DAILY;COUNT=1\n' +25ms
+knuff:18b7cd5a Getting occurrences between Tuesday, 1 July 2025 at 0:00:00 British Summer Time and Tuesday, 1 July 2025 at 23:59:59 British Summer Time inclusive +4ms
+knuff:18b7cd5a Found 1 occurrences: [2025-07-01T08:00:00.000Z] +4ms
+knuff:18b7cd5a Assigning reminder date '2025-07-01T08:00:00.000Z' and timezone 'Europe/London' +0ms
+knuff:18b7cd5a Creating reminder in repository 'acuminous/knuff' +0ms
+```
 
 ### Custom Drivers
-Developing a custom driver is simple, you just need to write a class that implements the Driver interface specified in the type definitions, and configure it in your Knuff script, e.g.
+To develop a custom driver you just need to write a class that implements the Driver interface specified in the [Type Definitions](https://github.com/acuminous/knuff/blob/main/index.d.ts#L19-L22), and configure it in your Knuff script, e.g.
 
 ```js
-import fs from 'node:fs';
-import yaml from 'yaml';
 import MyCustomDriver from './my-custom-driver';
-import Knuff from '@acuminous/knuff';
 
-const pathToReminders = process.argv[2] || 'reminders.yaml';
-
-const config = {
-  repositories: {
-    'my-repo-id': {
-      prop1: 'custom-prop-1',
-      prop2: 'custom-prop-2',
-      driver: 'my-custom-driver',
-    },
-  },
-};
+//...
 
 const drivers = { 'my-custom-driver': new MyCustomDriver() };
 const knuff = new Knuff(config, drivers)
-  .on('error', console.error);
-const reminders = yaml.parse(fs.readFileSync(pathToReminders, 'utf8'));
-
-knuff.process(reminders).then((stats) => {
-  console.log(`Successfully processed ${stats.reminders} reminders`);
-}).catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
 ```

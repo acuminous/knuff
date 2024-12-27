@@ -1,14 +1,28 @@
 /* eslint-disable no-console, import/no-unresolved */
 import fs from 'node:fs';
+import minimist from 'minimist';
 import yaml from 'yaml';
 import { Octokit } from '@octokit/rest';
-import Knuff from '@acuminous/knuff';
 import GitHubDriver from '@acuminous/knuff-github-driver';
+import Knuff from '@acuminous/knuff';
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const PATH_TO_REMINDERS = process.env.PATH_TO_REMINDERS || 'reminders.yaml';
+const argv = minimist(process.argv.slice(2), {
+  booleans: ['pretend'],
+  default: {
+    auth: process.env.GITHUB_TOKEN,
+    reminders: 'reminders.yaml',
+    pretend: false,
+    now: Date.now(),
+  },
+});
+
+const auth = argv.auth;
+const pathToReminders = argv.reminders;
+const pretend = argv.pretend;
+const now = () => new Date(argv.now).getTime();
 
 const config = {
+  pretend,
   repositories: {
     'acuminous/knuff': {
       owner: 'acuminous',
@@ -18,16 +32,18 @@ const config = {
   },
 };
 
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
-const drivers = { github: new GitHubDriver(octokit) };
-const knuff = new Knuff(config, drivers)
-  .on('error', console.error)
-  .on('progress', console.log);
-const reminders = yaml.parse(fs.readFileSync(PATH_TO_REMINDERS, 'utf8'));
-
-knuff.process(reminders).then((stats) => {
-  console.log(`Successfully processed ${stats.reminders} reminders`);
-}).catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+(async () => {
+  try {
+    const octokit = new Octokit({ auth });
+    const drivers = { github: new GitHubDriver(octokit) };
+    const knuff = new Knuff(config, drivers, now)
+      .on('error', console.error)
+      .on('progress', console.log);
+    const reminders = yaml.parse(fs.readFileSync(pathToReminders, 'utf8'));
+    const stats = await knuff.process(reminders);
+    console.log(stats);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+})();

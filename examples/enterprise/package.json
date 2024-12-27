@@ -12,6 +12,7 @@
   "dependencies": {
     "@acuminous/knuff": "../../",
     "@acuminous/knuff-github-driver": "^3.0.1",
+    "minimist": "^1.2.8",
     "octokit": "^4.0.2",
     "yaml": "^2.6.1"
   }

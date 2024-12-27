@@ -782,6 +782,26 @@ describe('knuff', () => {
       const fooReminders = driver.repositories('acuminous/foo').reminders;
       eq(fooReminders.length, 0);
     });
+
+    it('should support overriding now so that the current date can be controlled from parent modules using a different require cache', async () => {
+      const today = new Date(DateTime.now());
+      const driver = new StubDriver('github');
+      let called = false;
+      const now = () => {
+        called = true;
+        return Date.now();
+      };
+
+      const knuff = new Knuff({ repositories }, { github: driver }, now);
+
+      const reminders = [
+        opi.set(bumpDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
+      ];
+
+      await knuff.process(reminders);
+
+      eq(called, true);
+    });
   });
 
   describe('progress', () => {

@@ -38,7 +38,7 @@ type KnuffStats = {
 type Drivers = Record<string, Driver>;
 
 declare class Knuff extends EventEmitter {
-  constructor(config: KnuffConfig, drivers: Drivers);
+  constructor(config: KnuffConfig, drivers: Drivers, now?: () => number);
 
   /**
    * Processes a list of reminders, emitting progress and error events.

@@ -1,6 +1,6 @@
 const EventEmitter = require('node:events');
 const { RRule } = require('rrule');
-const { DateTime } = require('luxon');
+const { DateTime, Settings } = require('luxon');
 const Ajv = require('ajv');
 const slugify = require('unique-slug');
 const schema = require('./schema.json');
@@ -18,11 +18,12 @@ class Knuff extends EventEmitter {
   #ajvValidate;
   #stats;
 
-  constructor(config, drivers) {
+  constructor(config, drivers, now = Settings.now) {
     super();
     this.#config = { ...defaults, ...config };
     this.#drivers = drivers;
     this.#ajvValidate = new Ajv({ allErrors: true }).compile(schema);
+    Settings.now = now;
   }
 
   async process(reminders) {
@@ -95,16 +96,20 @@ class Knuff extends EventEmitter {
 
 function toOccurrences(reminder, before) {
   return (occurrences, schedule) => {
-    try {
-      const rule = RRule.fromString(schedule);
-      const timezone = rule.options.tzid || 'UTC';
-      const after = getStartOfDay(before, timezone);
-      const dates = rule.between(after, before, true).map((date) => ({ date, timezone }));
-      return occurrences.concat(dates);
-    } catch (cause) {
-      throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${schedule}'`, { cause });
-    }
+    const rule = parseRule(reminder, schedule);
+    const timezone = rule.options.tzid || 'UTC';
+    const after = getStartOfDay(before, timezone);
+    const dates = rule.between(after, before, true).map((date) => ({ date, timezone }));
+    return occurrences.concat(dates);
   };
+}
+
+function parseRule(reminder, schedule) {
+  try {
+    return RRule.fromString(schedule);
+  } catch (cause) {
+    throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${schedule}'`, { cause });
+  }
 }
 
 function getStartOfDay(date, tzid) {

@@ -159,16 +159,14 @@ const knuff = new Knuff(config, drivers)
 #### Testing Reminders
 If you want extra confidence that your reminders will fire when expected you can run Knuff in `pretend` mode with a fake date...
 ```js
-const { Settings } = require('luxon');
-
 const config = {
   pretend: true,
   repositories,
 };
 
-Settings.now = () => new Date('2024-12-25');
+const now = () => new Date('2024-12-25');
 
-const knuff = new Knuff(config, drivers).on('error', console.error);
+const knuff = new Knuff(config, drivers, now).on('error', console.error);
 ```
 Because Knuff does not actually create the issues it cannot detect duplicates that would have been created in the same run.
 

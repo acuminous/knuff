@@ -24,8 +24,8 @@ npm i @acuminous/knuff
 ### Reminders
 A `Reminder` needs 
 
-1. An id for duplicate checking and error reporting
-2. A schedule adhering to [rfc5545](https://datatracker.ietf.org/doc/html/rfc5545) RRULE format (more accessibly documented by the node [rrule](https://www.npmjs.com/package/rrule) package)
+1. An id for duplicate checking and error reporting (a random id will be created by default)
+2. A schedule adhering to [rfc5545](https://datatracker.ietf.org/doc/html/rfc5545) RRULE format (more accessibly documented by the node [rrule](https://www.npmjs.com/package/rrule) package). ChatGPT does a good job of creating these.
 3. Issue details (title and body) describing the work that needs to be done
 4. One or more repositories the reminder will be posted to
 
@@ -37,7 +37,7 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
 ```yaml
 # Creates a reminder in acuminous/foo repository at 08:00 on the 1st of July 2025
 
-  # Optional. Must be unique. Generated from the title if omitted
+  # Optional. Must be unique.
   # Used to avoid creating multiple open issues for the same reminder
 - id: 'update-cms-api-key'
 
@@ -61,7 +61,6 @@ Knuff works with JSON, but since it's so easy to convert YAML to JSON, and becau
 
   # Required. Supports a single string or list of strings
   # See https://datatracker.ietf.org/doc/html/rfc5545 and https://www.npmjs.com/package/rrule
-  # Use ChatGPT to generate :)
   schedule: |
     DTSTART;TZID=Europe/London:20250701T080000
     RRULE:FREQ=DAILY;COUNT=1

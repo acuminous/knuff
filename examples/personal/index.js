@@ -26,7 +26,7 @@ const config = {
   repositories: {
     'acuminous/knuff': {
       owner: 'acuminous',
-      name: 'knuff',
+      repo: 'knuff',
       driver: 'github',
     },
   },

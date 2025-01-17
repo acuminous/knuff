@@ -14,7 +14,7 @@ class StubDriver {
   }
 
   async hasReminder(repository, reminder) {
-    const key = this.#getRepositoryKey(repository.owner, repository.name);
+    const key = this.#getRepositoryKey(repository.owner, repository.repo);
     const { reminders } = this.#repositories[key] || this.#initRepository();
     return reminders.find((candidate) => {
       return candidate.labels.find((label) => label === this.#getKnuffIdLabel(reminder))
@@ -23,7 +23,7 @@ class StubDriver {
   }
 
   async createReminder(repository, reminder) {
-    const key = this.#getRepositoryKey(repository.owner, repository.name);
+    const key = this.#getRepositoryKey(repository.owner, repository.repo);
     this.#repositories[key] = this.#repositories[key] || this.#initRepository();
     const labels = [].concat(reminder.labels || [], this.#getKnuffIdLabel(reminder), this.#getKnuffDateLabel(reminder));
     this.#repositories[key].reminders.push({ ...reminder, labels });

@@ -1,5 +1,5 @@
 ### 4.0.3
-- Update README
+- Update documentation and tests to reflect repostitory.name => repository.repo change
 
 ### 4.0.2
 - Another fix for pretend dates

@@ -11,17 +11,17 @@ describe('knuff', () => {
   const repositories = {
     'acuminous/foo': {
       owner: 'acuminous',
-      name: 'foo',
+      repo: 'foo',
       driver: 'github',
     },
     'acuminous/bar': {
       owner: 'acuminous',
-      name: 'bar',
+      repo: 'bar',
       driver: 'github',
     },
     'acuminous/baz': {
       owner: 'acuminous',
-      name: 'baz',
+      repo: 'baz',
       driver: 'gitlab',
     },
   };

@@ -136,9 +136,11 @@ jobs:
       - name: Execute Knuff
         run: node your-knuff-script.js
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 ```
-If you only ever create reminders in the same repository as the action, you can use the GITHUB_TOKEN magically provided by GitHub. If you want to create reminders in multiple/separate repositories you can use a fine-grained personal access token with read+write issue permissions, and store it as an action secret. If you intend to use Knuff with a large number of teams and repositories you may find you are rate limited. In this case your best option is to register a GitHub App and use an installation token. See the [enterprise example](https://github.com/acuminous/knuff/tree/main/examples/enterprise) for how.
+Previously, if you only ever create reminders in the same repository as the action, you could use the GITHUB_TOKEN magically provided by GitHub. However, GitHub has removed the permission to create labels. Unless GitHub rectifies this, or if you want to create reminders in multiple/separate repositories you can use a fine-grained personal access token with read+write issue permissions, and store it as an action secret. 
+
+If you intend to use Knuff with a large number of teams and repositories you may find you are rate limited. In this case your best option is to register a GitHub App and use an installation token. See the [enterprise example](https://github.com/acuminous/knuff/tree/main/examples/enterprise) for how.
 
 ### Advanced Usage
 

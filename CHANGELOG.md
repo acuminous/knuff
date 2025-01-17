@@ -1,3 +1,6 @@
+### 4.0.2
+- Another fix for pretend dates
+
 ### 4.0.1
 - Fix pretend dates
 - Do not check for duplicates when pretending

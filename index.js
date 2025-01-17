@@ -22,12 +22,12 @@ class Knuff extends EventEmitter {
   #ajvValidate;
   #stats;
 
-  constructor(config, drivers, now = Settings.now) {
+  constructor(config, drivers, now) {
     super();
     this.#config = { ...defaults, ...config };
     this.#drivers = drivers;
     this.#ajvValidate = new Ajv({ allErrors: true }).compile(schema);
-    Settings.now = now;
+    Settings.now = now || Settings.now;
   }
 
   async process(reminders) {
@@ -77,9 +77,9 @@ class Knuff extends EventEmitter {
   }
 
   #getOccurrence(reminder) {
-    const before = new Date(DateTime.now());
+    const now = DateTime.now().toJSDate();
     return [].concat(reminder.schedule)
-      .reduce(toOccurrences(reminder, before), [])
+      .reduce(toOccurrences(reminder, now), [])
       .sort(inAscendingOrder)[0];
   }
 
@@ -107,14 +107,14 @@ class Knuff extends EventEmitter {
   }
 }
 
-function toOccurrences(reminder, before) {
+function toOccurrences(reminder, now) {
   return (occurrences, schedule) => {
     const rule = parseRule(reminder, schedule);
     als.getStore().debug("Schedule is '%s'", schedule.replace(/\n/g, '\\n'));
     const timezone = rule.options.tzid || 'UTC';
-    const after = getStartOfDay(before, timezone);
-    als.getStore().debug('Getting occurrences between %s and %s inclusive', DateTime.fromJSDate(after).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS), DateTime.fromJSDate(before).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS));
-    const dates = rule.between(after, before, true);
+    const startOfDay = getStartOfDay(now, timezone);
+    als.getStore().debug('Getting occurrences between %s and %s inclusive', DateTime.fromJSDate(startOfDay).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS), DateTime.fromJSDate(now).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS));
+    const dates = rule.between(startOfDay, now, true);
     als.getStore().debug('Found %d occurrences: [%s]', dates.length, dates.map((date) => date.toISOString()).join(', '));
     return occurrences.concat(dates.map((date) => ({ date, timezone })));
   };

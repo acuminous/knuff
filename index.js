@@ -111,7 +111,7 @@ function toOccurrences(reminder, now) {
   return (occurrences, schedule) => {
     const rule = parseRule(reminder, schedule);
     als.getStore().debug("Schedule is '%s'", schedule.replace(/\n/g, '\\n'));
-    const timezone = rule.options.tzid || 'UTC';
+    const timezone = rule.options.tzid;
     const startOfDay = getStartOfDay(now, timezone);
     als.getStore().debug('Getting occurrences between %s and %s inclusive', DateTime.fromJSDate(startOfDay).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS), DateTime.fromJSDate(now).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS));
     const dates = rule.between(startOfDay, now, true);
@@ -122,7 +122,10 @@ function toOccurrences(reminder, now) {
 
 function parseRule(reminder, schedule) {
   try {
-    return RRule.fromString(schedule);
+    const options = RRule.parseString(schedule);
+    // RRule dtstart defaults to the current time. Instead use Luxon to create the default so it can be stubbed
+    const dtstart = DateTime.now().startOf('day').toJSDate();
+    return new RRule({ dtstart, tzid: 'UTC', ...options });
   } catch (cause) {
     throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${schedule}'`, { cause });
   }

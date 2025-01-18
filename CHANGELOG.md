@@ -1,3 +1,6 @@
+### 4.0.4
+- Workaround rrules time zone bugs
+
 ### 4.0.3
 - Update documentation and tests to reflect repostitory.name => repository.repo change
 

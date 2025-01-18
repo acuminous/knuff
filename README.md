@@ -25,7 +25,7 @@ npm i @acuminous/knuff
 A `Reminder` needs 
 
 1. An id for duplicate checking and error reporting (a random id will be created by default)
-2. A schedule adhering to [rfc5545](https://datatracker.ietf.org/doc/html/rfc5545) RRULE format (more accessibly documented by the node [rrule](https://www.npmjs.com/package/rrule) package). ChatGPT does a good job of creating these.
+2. A schedule adhering to [rfc5545](https://datatracker.ietf.org/doc/html/rfc5545) RRULE format (more accessibly documented by the node [rrule](https://www.npmjs.com/package/rrule) package).
 3. Issue details (title and body) describing the work that needs to be done
 4. One or more repositories the reminder will be posted to
 
@@ -141,6 +141,36 @@ jobs:
 Previously, if you only ever create reminders in the same repository as the action, you could use the GITHUB_TOKEN magically provided by GitHub. However, GitHub has removed the permission to create labels. Unless GitHub rectifies this, or if you want to create reminders in multiple/separate repositories you can use a fine-grained personal access token with read+write issue permissions, and store it as an action secret. 
 
 If you intend to use Knuff with a large number of teams and repositories you may find you are rate limited. In this case your best option is to register a GitHub App and use an installation token. See the [enterprise example](https://github.com/acuminous/knuff/tree/main/examples/enterprise) for how.
+
+### Example RRules
+
+#### A One Off Reminder
+```
+DTSTART;TZID=Europe/London:20250701T090000
+RRULE:FREQ=DAILY;UNTIL=20250701T090000;
+```
+
+#### A Yearly Reminder
+```
+DTSTART;TZID=Europe/London:20250715T000000
+RRULE:FREQ=YEARLY
+```
+
+#### A Fortnightly Reminder
+```
+DTSTART;TZID=Europe/London:20250701T090000
+RRULE:FREQ=WEEKLY;INTERVAL=2
+```
+
+#### A Reminder Every First Sunday of the Month
+```
+RRULE:FREQ=MONTHLY;BYDAY=+1SU
+```
+
+#### A Reminder Every Last Sunday of the Month
+```
+RRULE:FREQ=MONTHLY;BYDAY=-1SU
+```
 
 ### Advanced Usage
 

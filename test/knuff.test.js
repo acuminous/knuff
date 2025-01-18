@@ -340,54 +340,44 @@ describe('knuff', () => {
 
   describe('process', () => {
 
-    it('should create a reminder when the next occurrence is today', async () => {
-      const today = new Date(DateTime.now());
+    it('should create a reminder when the next occurrence is today (Europe/London)', async () => {
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
       const reminders = [
         opi.set(bumpDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
-        opi.set(auditDependencies, 'schedule', `DTSTART;TZID=Europe/London:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 2);
-      eq(fooReminders[0].title, 'Bump Dependencies');
-      eq(fooReminders[0].body, 'Bump dependencies for all projects');
-      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[0].timezone, 'Europe/London');
-      eq(fooReminders[1].title, 'Audit Dependencies');
-      eq(fooReminders[1].body, 'Run npm audit --fix');
-      eq(fooReminders[1].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[1].timezone, 'Europe/London');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].title, 'Bump Dependencies');
+      eq(created[0].body, 'Bump dependencies for all projects');
+      eq(created[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(created[0].timezone, 'Europe/London');
     });
 
-    it('should create a reminder when the next occurrence is today in UTC', async () => {
-      const today = new Date(DateTime.now());
+    it('should create a reminder when the next occurrence is today (UTC)', async () => {
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
       const reminders = [
         opi.set(bumpDependencies, 'schedule', `DTSTART:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
-        opi.set(auditDependencies, 'schedule', `DTSTART:${dtstart(today)};\nRRULE:FREQ=DAILY;COUNT=1`),
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 2);
-      eq(fooReminders[0].title, 'Bump Dependencies');
-      eq(fooReminders[0].body, 'Bump dependencies for all projects');
-      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[0].timezone, 'UTC');
-      eq(fooReminders[1].title, 'Audit Dependencies');
-      eq(fooReminders[1].body, 'Run npm audit --fix');
-      eq(fooReminders[1].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[1].timezone, 'UTC');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].title, 'Bump Dependencies');
+      eq(created[0].body, 'Bump dependencies for all projects');
+      eq(created[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(created[0].timezone, 'UTC');
     });
 
     it('should create a reminder when there are multiple schedules all with the next occurrences being today', async () => {
-      const today1 = new Date(DateTime.now());
+      const today1 = DateTime.now().toJSDate();
       const today2 = new Date(today1.getTime() + 1000);
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
@@ -400,16 +390,16 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 1);
-      eq(fooReminders[0].title, 'Bump Dependencies');
-      eq(fooReminders[0].body, 'Bump dependencies for all projects');
-      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[0].timezone, 'Europe/London');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].title, 'Bump Dependencies');
+      eq(created[0].body, 'Bump dependencies for all projects');
+      eq(created[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(created[0].timezone, 'Europe/London');
     });
 
     it('should create a reminder when there are two schedules but only the first schedules next occurrence is today', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
@@ -422,16 +412,16 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 1);
-      eq(fooReminders[0].title, 'Bump Dependencies');
-      eq(fooReminders[0].body, 'Bump dependencies for all projects');
-      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[0].timezone, 'Europe/London');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].title, 'Bump Dependencies');
+      eq(created[0].body, 'Bump dependencies for all projects');
+      eq(created[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(created[0].timezone, 'Europe/London');
     });
 
     it('should create a reminder when there are two schedules but only the second schedules next occurrence is today', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
@@ -444,16 +434,16 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 1);
-      eq(fooReminders[0].title, 'Bump Dependencies');
-      eq(fooReminders[0].body, 'Bump dependencies for all projects');
-      eq(fooReminders[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
-      eq(fooReminders[0].timezone, 'Europe/London');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].title, 'Bump Dependencies');
+      eq(created[0].body, 'Bump dependencies for all projects');
+      eq(created[0].date.toISOString(), '2024-01-01T11:00:00.000Z');
+      eq(created[0].timezone, 'Europe/London');
     });
 
     it('should not create reminders when the next occurrence is after today', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
@@ -463,12 +453,12 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 0);
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 0);
     });
 
     it('should not create reminders when the last occurrence was before today', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
@@ -478,12 +468,12 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 0);
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 0);
     });
 
     it('should default the id to the sluggified title', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
       const reminders = [
@@ -496,13 +486,13 @@ describe('knuff', () => {
 
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 1);
-      eq(fooReminders[0].id, '6a81e4c3');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].id, '6a81e4c3');
     });
 
     it('should add the specified labels', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
@@ -514,17 +504,17 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 1);
-      eq(fooReminders[0].labels.length, 4);
-      eq(fooReminders[0].labels[0], 'chore');
-      eq(fooReminders[0].labels[1], 'reminder');
-      eq(fooReminders[0].labels[2], 'knuff:bump-dependencies');
-      eq(fooReminders[0].labels[3], 'knuff:2024-01-01');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].labels.length, 4);
+      eq(created[0].labels[0], 'chore');
+      eq(created[0].labels[1], 'reminder');
+      eq(created[0].labels[2], 'knuff:bump-dependencies');
+      eq(created[0].labels[3], 'knuff:2024-01-01');
     });
 
     it('should create reminders in all specified repositories', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
@@ -544,7 +534,7 @@ describe('knuff', () => {
     });
 
     it('should create reminders using the correct driver', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver1 = new StubDriver('github');
       const driver2 = new StubDriver('gitlab');
       const drivers = { github: driver1, gitlab: driver2 };
@@ -566,7 +556,7 @@ describe('knuff', () => {
     });
 
     it('should suppress duplicate reminders', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
@@ -576,16 +566,14 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 1);
-      eq(fooReminders[0].title, 'Bump Dependencies');
-      eq(fooReminders[0].body, 'Bump dependencies for all projects');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].title, 'Bump Dependencies');
+      eq(created[0].body, 'Bump dependencies for all projects');
     });
 
-    /* eslint-disable camelcase */
-    it('should respect the reminder time zone (end of day before reminder)', async () => {
-      const end_of_dec_31st_2023_Sydney = new Date('2023-12-31T12:59:00.000Z');
-      Settings.now = () => end_of_dec_31st_2023_Sydney.getTime();
+    it('should respect the reminder time zone at the end of day prior to the reminder day', async () => {
+      setNow('2023-12-31T23:59:59.999', 'Australia/Sydney');
 
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
@@ -595,15 +583,13 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 0);
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 0);
     });
-    /* eslint-enable camelcase */
 
-    /* eslint-disable camelcase */
-    it('should respect the reminder time zone (start of reminder day)', async () => {
-      const start_of_jan_1st_2024_Sydney = new Date('2023-12-31T13:00:00.000Z');
-      Settings.now = () => start_of_jan_1st_2024_Sydney.getTime();
+    it('should respect the reminder time zone at the start of reminder day', async () => {
+      setNow('2024-01-01T00:00:00.000', 'Australia/Sydney');
+
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
@@ -612,18 +598,15 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 1);
-      eq(fooReminders[0].date.toISOString(), '2023-12-31T13:00:00.000Z');
-      eq(fooReminders[0].timezone, 'Australia/Sydney');
-      eq(fooReminders[0].labels[1], 'knuff:2024-01-01');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].date.toISOString(), '2023-12-31T13:00:00.000Z');
+      eq(created[0].timezone, 'Australia/Sydney');
+      eq(created[0].labels[1], 'knuff:2024-01-01');
     });
-    /* eslint-enable camelcase */
 
-    /* eslint-disable camelcase */
-    it('should respect the reminder time zone (end of reminder day)', async () => {
-      const end_of_jan_1st_2024_Sydney = new Date('2024-01-01T12:59:00.000Z');
-      Settings.now = () => end_of_jan_1st_2024_Sydney.getTime();
+    it('should respect the reminder time zone at the end of the reminder day', async () => {
+      setNow('2024-01-01T23:59:59.999', 'Australia/Sydney');
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
@@ -632,18 +615,16 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 1);
-      eq(fooReminders[0].date.toISOString(), '2023-12-31T13:00:00.000Z');
-      eq(fooReminders[0].timezone, 'Australia/Sydney');
-      eq(fooReminders[0].labels[1], 'knuff:2024-01-01');
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 1);
+      eq(created[0].date.toISOString(), '2023-12-31T13:00:00.000Z');
+      eq(created[0].timezone, 'Australia/Sydney');
+      eq(created[0].labels[1], 'knuff:2024-01-01');
     });
-    /* eslint-enable camelcase */
 
-    /* eslint-disable camelcase */
-    it('should respect the reminder time zone (start of day after reminder)', async () => {
-      const start_of_jan_2nd_2024_Sydney = new Date('2024-01-01T13:00:00.000Z');
-      Settings.now = () => start_of_jan_2nd_2024_Sydney.getTime();
+    it('should respect the reminder time zone at the start of day after the reminder day', async () => {
+      setNow('2024-01-02T00:00:00.000', 'Australia/Sydney');
+
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
@@ -652,16 +633,15 @@ describe('knuff', () => {
       ];
       await knuff.process(reminders);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 0);
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 0);
     });
-    /* eslint-enable camelcase */
   });
 
   describe('error handling', () => {
 
     it('should report missing repositories', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
@@ -706,7 +686,7 @@ describe('knuff', () => {
     });
 
     it('should continue on failure', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
@@ -740,7 +720,7 @@ describe('knuff', () => {
 
   describe('stats', () => {
     it('should report stats', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
       const knuff = getKnuff();
 
@@ -761,7 +741,7 @@ describe('knuff', () => {
 
   describe('pretend', () => {
     it('should pretend to create reminders', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
       const driver = new StubDriver('github');
       const knuff = getKnuff({ pretend: true }, { github: driver });
@@ -779,12 +759,12 @@ describe('knuff', () => {
       eq(stats.created, 2);
       eq(stats.errors, 0);
 
-      const fooReminders = driver.repositories('acuminous/foo').reminders;
-      eq(fooReminders.length, 0);
+      const created = driver.repositories('acuminous/foo').reminders;
+      eq(created.length, 0);
     });
 
     it('should support overriding now so that the current date can be controlled from parent modules using a different require cache', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       let called = false;
       const now = () => {
@@ -806,7 +786,7 @@ describe('knuff', () => {
 
   describe('progress', () => {
     it('should report progress every 10 reminders by default', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const knuff = getKnuff({}, { github: driver });
 
@@ -826,7 +806,7 @@ describe('knuff', () => {
     });
 
     it('should report progress every N reminders when specified', async () => {
-      const today = new Date(DateTime.now());
+      const today = DateTime.now().toJSDate();
       const driver = new StubDriver('github');
       const drivers = { github: driver };
       const knuff = new Knuff({ progress: 50, repositories }, drivers);
@@ -864,5 +844,10 @@ describe('knuff', () => {
     const minutes = String(date.getUTCMinutes()).padStart(2, '0');
     const seconds = String(date.getUTCSeconds()).padStart(2, '0');
     return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+  }
+
+  function setNow(text, timezone) {
+    const now = DateTime.fromISO(text).setZone(timezone, { keepLocalTime: true }).toJSDate().getTime();
+    Settings.now = () => now;
   }
 });

@@ -77,7 +77,7 @@ class Knuff extends EventEmitter {
   }
 
   #getOccurrence(reminder) {
-    const now = DateTime.now().toJSDate();
+    const now = DateTime.now().toUTC().toJSDate();
     return [].concat(reminder.schedule)
       .reduce(toOccurrences(reminder, now), [])
       .sort(inAscendingOrder)[0];
@@ -109,30 +109,41 @@ class Knuff extends EventEmitter {
 
 function toOccurrences(reminder, now) {
   return (occurrences, schedule) => {
-    const rule = parseRule(reminder, schedule);
-    als.getStore().debug("Schedule is '%s'", schedule.replace(/\n/g, '\\n'));
-    const timezone = rule.options.tzid;
-    const startOfDay = getStartOfDay(now, timezone);
-    als.getStore().debug('Getting occurrences between %s and %s inclusive', DateTime.fromJSDate(startOfDay).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS), DateTime.fromJSDate(now).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS));
-    const dates = rule.between(startOfDay, now, true);
-    als.getStore().debug('Found %d occurrences: [%s]', dates.length, dates.map((date) => date.toISOString()).join(', '));
-    return occurrences.concat(dates.map((date) => ({ date, timezone })));
+    try {
+      const options = RRule.parseString(schedule);
+      const timezone = options.tzid || 'UTC';
+      const rule = createRule(options, now);
+      als.getStore().debug("Schedule is '%s'", schedule.replace(/\n/g, '\\n'));
+      const startOfDay = getStartOfDay(now, timezone);
+      als.getStore().debug('Getting occurrences between %s and %s inclusive', DateTime.fromJSDate(startOfDay).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS), DateTime.fromJSDate(now).toLocaleString(DateTime.DATETIME_HUGE_WITH_SECONDS));
+      const dates = rule.between(startOfDay, now, true);
+      als.getStore().debug('Found %d occurrences: [%s]', dates.length, dates.map((date) => date.toISOString()).join(', '));
+      return occurrences.concat(dates.map((date) => ({ date, timezone })));
+    } catch (cause) {
+      throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${schedule}'`, { cause });
+    }
   };
 }
 
-function parseRule(reminder, schedule) {
-  try {
-    const options = RRule.parseString(schedule);
-    // RRule dtstart defaults to the current time. Instead use Luxon to create the default so it can be stubbed
-    const dtstart = DateTime.now().startOf('day').toJSDate();
-    return new RRule({ dtstart, tzid: 'UTC', ...options });
-  } catch (cause) {
-    throw new Error(`Reminder '${reminder.id}' has an invalid schedule '${schedule}'`, { cause });
+function createRule(options, now) {
+  // RRule defaults dtstart to new Date(). Use Luxon created value for now to support stubbing
+  const dtstart = now;
+
+  // RRule is VERY buggy wrt timezones. The only option I've found is to coerce dates into UTC
+  const overrides = { tzid: 'UTC' };
+  if (options.tzid) {
+    if (options.dtstart) overrides.dtstart = forceUTC(options.dtstart, options.tzid);
+    if (options.until) overrides.until = forceUTC(options.until, options.tzid);
   }
+  return new RRule({ dtstart, ...options, ...overrides });
 }
 
-function getStartOfDay(date, tzid) {
-  return DateTime.fromJSDate(date).setZone(tzid).startOf('day').toJSDate();
+function forceUTC(date, timezone) {
+  return DateTime.fromJSDate(date).toUTC().setZone(timezone, { keepLocalTime: true }).toJSDate();
+}
+
+function getStartOfDay(date, timezone) {
+  return DateTime.fromJSDate(date).setZone(timezone).startOf('day').toJSDate();
 }
 
 function inAscendingOrder(a, b) {

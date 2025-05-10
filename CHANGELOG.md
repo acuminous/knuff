@@ -1,3 +1,6 @@
+### 4.0.5
+- Fixed invalid typescript defs
+
 ### 4.0.4
 - Workaround rrules time zone bugs
 

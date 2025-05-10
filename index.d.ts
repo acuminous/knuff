@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { RRule } from 'rrule';
 
-interface Repository = {
+interface Repository {
   id: string;
   driver: string;
 };
